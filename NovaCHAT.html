@@ -102,7 +102,8 @@
     /* 照 Group：固定高度、離底固定距離，不吃 safe-area → 不會變高 */
     .tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; display: flex; justify-content: center; padding: 0 16px 20px; }
     .tabbar-inner { width: 100%; height: 62px; background: var(--nc-bar-fill); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px); border: 0.5px solid rgba(0,0,0,0.08); border-radius: 999px; box-shadow: 0 6px 20px rgba(0,0,0,0.10); display: flex; align-items: center; padding: 0 4px; position: relative; touch-action: none; }
-    .tab-lens { position: absolute; top: 5px; height: 52px; left: 0; width: 0; background: var(--nc-bar-active); border-radius: 999px; z-index: 0; pointer-events: none; transition: left .3s cubic-bezier(.34,1.2,.5,1), width .3s cubic-bezier(.34,1.2,.5,1); }
+    /* 動畫參考 Group.html：改用 transform 移動 + 彈性曲線（樣式/顏色/大小不變，只改動畫） */
+    .tab-lens { position: absolute; top: 5px; height: 52px; left: 0; width: 0; background: var(--nc-bar-active); border-radius: 999px; z-index: 0; pointer-events: none; transform: translateX(0); transition: transform .45s cubic-bezier(.34,1.56,.64,1); will-change: transform; }
     .tab { flex: 1; z-index: 1; height: 52px; border: 0; background: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border-radius: 999px; color: #000; font-family: var(--sf); position: relative; }
     .tab .ico { width: 26px; height: 26px; display: grid; place-items: center; }
     .tab .ico svg { width: 24px; height: 24px; fill: currentColor; }
@@ -410,24 +411,32 @@
     });
     $('.composer .plus').addEventListener('click',()=>toast('附件 / 圖片（下一階段）'));
 
-    // Tab Bar：膠囊可點、可左右拖動
+    // Tab Bar：膠囊可點、可左右拖動（動畫參考 Group.html：彈性位移 + 滑動彈簧跟隨；樣式/顏色不變）
     const tabbar=$('#tabbar'), lens=$('#tabLens');
     const tabs=()=>[...tabbar.querySelectorAll('.tab')];
-    const moveLens=(t)=>{ if(!t) return; lens.style.transition=''; lens.style.left=t.offsetLeft+'px'; lens.style.width=t.offsetWidth+'px'; };
+    const SPRING='transform .45s cubic-bezier(.34,1.56,.64,1)';   // Group 的彈性曲線：切換時輕微過衝回彈
+    const moveLens=(t)=>{ if(!t) return; lens.style.transition=SPRING; lens.style.width=t.offsetWidth+'px'; lens.style.transform='translateX('+t.offsetLeft+'px)'; };
     function selectTab(t, silent){ if(!t) return;
       tabs().forEach(x=>{ const on=x===t; x.classList.toggle('active',on); on?x.setAttribute('aria-current','page'):x.removeAttribute('aria-current'); });
       moveLens(t); if(!silent && t.dataset.tab!=='chat') toast(t.querySelector('.lbl').textContent+'（下一階段）'); }
     const tabAtX=(clientX)=>{ const r=tabbar.getBoundingClientRect(); const x=clientX-r.left;
       let best=tabs()[0], bd=Infinity; tabs().forEach(t=>{ const c=t.offsetLeft+t.offsetWidth/2; const d=Math.abs(c-x); if(d<bd){bd=d;best=t;} }); return best; };
-    let dragging=false, moved=false;
-    tabbar.addEventListener('pointerdown',(e)=>{ if(!e.target.closest('.tab')) return; dragging=true; moved=false; try{ tabbar.setPointerCapture(e.pointerId); }catch{} });
+    // 滑動跟隨：手指只改目標，鏡片每一幀用彈簧往目標靠近（取代原本線性直接設位置）→ 跟 Group 一樣順滑
+    let dragging=false, moved=false, raf=0, springX=0, springV=0, springTarget=0;
+    const curX=()=>{ const m=/translateX\(([-\d.]+)px\)/.exec(lens.style.transform); return m?parseFloat(m[1]):((document.querySelector('.tab.active')||tabs()[0]).offsetLeft); };
+    function springStep(){ raf=0;
+      springV=(springV+(springTarget-springX)*0.22)*0.72;        // 剛性 0.22 / 阻尼 0.72
+      springX+=springV; lens.style.transform='translateX('+springX+'px)';
+      if(dragging || Math.abs(springTarget-springX)>0.3 || Math.abs(springV)>0.3) raf=requestAnimationFrame(springStep); }
+    tabbar.addEventListener('pointerdown',(e)=>{ if(!e.target.closest('.tab')) return; dragging=true; moved=false;
+      springX=curX(); springV=0; lens.style.transition='none'; try{ tabbar.setPointerCapture(e.pointerId); }catch{} });
     tabbar.addEventListener('pointermove',(e)=>{ if(!dragging) return; moved=true;
       const r=tabbar.getBoundingClientRect(); const w=lens.offsetWidth||tabs()[0].offsetWidth;
       let left=e.clientX-r.left-w/2; left=Math.max(4, Math.min(left, tabbar.clientWidth-w-4));
-      lens.style.transition='none'; lens.style.left=left+'px'; });
-    const endDrag=(e)=>{ if(!dragging) return; dragging=false; selectTab(tabAtX(e.clientX), false); };
+      springTarget=left; if(!raf) raf=requestAnimationFrame(springStep); });
+    const endDrag=(e)=>{ if(!dragging) return; dragging=false; if(raf){ cancelAnimationFrame(raf); raf=0; } lens.style.transition=SPRING; selectTab(tabAtX(e.clientX), false); };
     tabbar.addEventListener('pointerup',endDrag);
-    tabbar.addEventListener('pointercancel',()=>{ dragging=false; selectTab(document.querySelector('.tab.active'), true); });
+    tabbar.addEventListener('pointercancel',()=>{ dragging=false; if(raf){ cancelAnimationFrame(raf); raf=0; } lens.style.transition=SPRING; selectTab(document.querySelector('.tab.active'), true); });
     tabbar.addEventListener('click',(e)=>{ if(moved){ e.preventDefault(); e.stopPropagation(); moved=false; return; } const t=e.target.closest('.tab'); if(t) selectTab(t,false); });
     const relocate=()=>moveLens(document.querySelector('.tab.active'));
     requestAnimationFrame(relocate); window.addEventListener('resize',relocate);
