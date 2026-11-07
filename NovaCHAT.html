@@ -63,7 +63,7 @@
     .chip.active .cnt { background: rgba(255,255,255,.3); }
 
     /* 列表 */
-    .list { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; touch-action: pan-y; padding-top: 6px; }
+    .list { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; touch-action: pan-y; padding: 6px 0 96px; }
     .list::-webkit-scrollbar { width: 0; }
     .crow { display: flex; align-items: center; gap: 12px; padding: 9px 16px; cursor: pointer; position: relative; }
     .crow:active { background: rgba(0,0,0,0.04); }
@@ -93,7 +93,8 @@
     .empty p { font-size: 14px; }
 
     /* Tab Bar — iOS 底部不過高：用 max() 不疊加 safe-area */
-    .tabbar { flex: 0 0 auto; display: flex; justify-content: center; padding: 8px 16px max(8px, env(safe-area-inset-bottom, 0px)); }
+    /* 照 Group：固定高度、離底固定距離，不吃 safe-area → 不會變高 */
+    .tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; display: flex; justify-content: center; padding: 0 16px 20px; }
     .tabbar-inner { width: 100%; height: 62px; background: var(--nc-bar-fill); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px); border: 0.5px solid rgba(0,0,0,0.08); border-radius: 999px; box-shadow: 0 6px 20px rgba(0,0,0,0.10); display: flex; align-items: center; padding: 0 4px; position: relative; touch-action: none; }
     .tab-lens { position: absolute; top: 5px; height: 52px; left: 0; width: 0; background: var(--nc-bar-active); border-radius: 999px; z-index: 0; pointer-events: none; transition: left .3s cubic-bezier(.34,1.2,.5,1), width .3s cubic-bezier(.34,1.2,.5,1); }
     .tab { flex: 1; z-index: 1; height: 52px; border: 0; background: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border-radius: 999px; color: #000; font-family: var(--sf); position: relative; }
