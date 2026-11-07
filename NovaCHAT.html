@@ -129,7 +129,8 @@
     .bubble .who { font-size: 12px; font-weight: 600; color: var(--nc-blue); margin-bottom: 2px; }
     .bubble .mt { font-size: 10px; opacity: .6; margin-left: 8px; float: right; margin-top: 6px; }
     .bubble.me .mt { color: #000; }
-    .composer { flex: 0 0 auto; display: flex; align-items: flex-end; gap: 8px; padding: 8px 12px calc(10px + env(safe-area-inset-bottom)); border-top: 0.5px solid var(--nc-sep); background: #fff; }
+    /* 半透明毛玻璃：讓聊天背景透到底部、真正全螢幕 */
+    .composer { flex: 0 0 auto; display: flex; align-items: flex-end; gap: 8px; padding: 8px 12px calc(10px + env(safe-area-inset-bottom)); border-top: 0.5px solid var(--nc-sep); background: rgba(255,255,255,.86); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
     .composer .plus { border: 0; background: none; color: #000; cursor: pointer; width: 34px; height: 34px; flex: 0 0 auto; display: grid; place-items: center; }
     .composer .plus svg { width: 26px; height: 26px; }
     .composer .field { flex: 1; min-width: 0; display: flex; align-items: center; background: var(--nc-fill-secondary); border-radius: 20px; padding: 7px 14px; }
