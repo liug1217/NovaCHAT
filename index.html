@@ -94,9 +94,17 @@
       box-shadow: 0 6px 20px rgba(0,0,0,0.10);
       display: flex; align-items: center;
       padding: 0 4px;                    /* 內部按鈕區 390 寬 */
+      /* 底部可左右滑動 */
+      overflow-x: auto; overflow-y: hidden;
+      scroll-snap-type: x proximity;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      overscroll-behavior-x: contain;
     }
+    .tabbar-inner::-webkit-scrollbar { display: none; }
     .tab {
-      flex: 1; height: 52px; border: 0; background: none; cursor: pointer;
+      flex: 0 0 84px; scroll-snap-align: center;
+      height: 52px; border: 0; background: none; cursor: pointer;
       display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
       border-radius: 999px; color: #000; font-family: var(--sf);
       position: relative;
@@ -182,6 +190,25 @@
         if (on) t.setAttribute('aria-current', 'page'); else t.removeAttribute('aria-current');
       });
     });
+
+    // 底部左右滑動：手機原生觸控已支援；桌面補滑鼠拖曳
+    (function () {
+      const bar = document.getElementById('tabbar');
+      let down = false, startX = 0, startLeft = 0, moved = false;
+      bar.addEventListener('pointerdown', (e) => { down = true; moved = false; startX = e.clientX; startLeft = bar.scrollLeft; });
+      bar.addEventListener('pointermove', (e) => {
+        if (!down) return;
+        const dx = e.clientX - startX;
+        if (Math.abs(dx) > 4) moved = true;
+        bar.scrollLeft = startLeft - dx;
+      });
+      const end = () => { down = false; };
+      bar.addEventListener('pointerup', end);
+      bar.addEventListener('pointercancel', end);
+      bar.addEventListener('pointerleave', end);
+      // 拖曳時不要誤觸選中
+      bar.addEventListener('click', (e) => { if (moved) { e.stopPropagation(); e.preventDefault(); } }, true);
+    })();
 
     // Service worker（離線 / 可安裝）
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
