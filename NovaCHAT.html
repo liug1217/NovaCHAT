@@ -6,7 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <!-- 狀態列透明、畫面延伸到狀態列/瀏海底下（照 Group 做法）；內容用 env(safe-area-inset-*) 讓開 -->
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="NovaCHAT">
   <meta name="theme-color" content="#ffffff">
   <link rel="manifest" href="manifest.json">
@@ -41,7 +42,7 @@
     input, textarea { -webkit-user-select: text; user-select: text; }
 
     .app {
-      position: relative; width: 100%; max-width: 500px; height: 100dvh;
+      position: relative; width: 100%; height: 100vh; height: 100dvh;
       background: #fff; overflow: hidden; display: flex; flex-direction: column;
     }
 
