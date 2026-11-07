@@ -449,18 +449,18 @@
     if(!vv) return;                      // 舊瀏覽器：維持原本 100vh 行為
     const root = document.documentElement;
     const app  = document.getElementById('app');
-    let raf = 0;
+    let active = false, raf = 0;         // active：輸入框已聚焦（一 focus 就跟隨，不靠鍵盤高度門檻）
     function apply(){
       raf = 0;
-      const kb = window.innerHeight - vv.height;   // 鍵盤高度（版面視口 - 可視視口）
-      const open = kb > 80;                         // >80px 視為鍵盤開啟
-      root.classList.toggle('kb-open', open);
-      if(open){
-        root.style.setProperty('--app-h', vv.height + 'px');   // 版面縮到鍵盤上方
-        app.style.transform = 'translateY(' + vv.offsetTop + 'px)';  // 抵銷 iOS 整頁上捲
+      if(active){
+        // 聚焦期間：把版面縮到「可視視口」實際高度、抵銷 iOS 整頁上捲 → 輸入列即刻升到鍵盤頂、頂欄留原位
+        root.classList.add('kb-open');
+        root.style.setProperty('--app-h', Math.round(vv.height) + 'px');
+        app.style.transform = 'translateY(' + Math.round(vv.offsetTop) + 'px)';
         if(State.openId){ const m = document.getElementById('msgs'); if(m) m.scrollTop = m.scrollHeight; }
       }else{
-        root.style.removeProperty('--app-h');        // 鍵盤收起：還原 100vh
+        root.classList.remove('kb-open');
+        root.style.removeProperty('--app-h');        // 失焦：還原 100vh
         app.style.transform = '';
         if(window.scrollY) window.scrollTo(0, 0);     // 修正殘留的整頁位移
       }
@@ -468,6 +468,14 @@
     const schedule = ()=>{ if(!raf) raf = requestAnimationFrame(apply); };
     vv.addEventListener('resize', schedule);
     vv.addEventListener('scroll', schedule);
+    // 一聚焦輸入框（即使未打字）就啟動；鍵盤動畫需時，稍後再同步兩次確保升上來
+    document.addEventListener('focusin', (e)=>{
+      if(e.target.closest('input, textarea')){ active = true; schedule(); setTimeout(schedule, 250); setTimeout(schedule, 500); }
+    });
+    // 失焦：等焦點結算，若已不在任何輸入框才還原（避免輸入框之間切換時閃動）
+    document.addEventListener('focusout', ()=>{
+      setTimeout(()=>{ const a = document.activeElement; if(!(a && a.matches('input, textarea'))){ active = false; schedule(); } }, 60);
+    });
   })();
 
   (async function init(){ bind(); applyBg(getBg()); await Store.fetchChats(); renderList();
