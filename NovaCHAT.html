@@ -45,7 +45,10 @@
     .app {
       /* 照 Group：用 100vh（iOS 固定為工具列收起時的最大高度，不像 dvh 會動），
          畫面永遠 ≥ 可見範圍 → 底部不會「有時多一塊」；底欄是 fixed 永遠貼可見底部 */
-      position: relative; width: 100%; height: 100vh;
+      position: relative; width: 100%;
+      /* 預設沿用 100vh（照 Group：不會跟工具列而動）；鍵盤彈出時由 JS 以 --app-h = visualViewport.height 覆蓋，
+         令版面縮到鍵盤上方的「可視區域」，而不是被瀏覽器整頁往上推 */
+      height: var(--app-h, 100vh);
       background: #fff; overflow: hidden; display: flex; flex-direction: column;
     }
 
@@ -436,6 +439,36 @@
   document.addEventListener('gesturestart', (e)=>e.preventDefault());
   let lastTouch=0;
   document.addEventListener('touchend',(e)=>{ const now=Date.now(); if(now-lastTouch<=300) e.preventDefault(); lastTouch=now; }, {passive:false});
+
+  /* ===== 手機鍵盤修復：跟「可視視口」縮放版面，而非讓瀏覽器整頁往上推 =====
+     原理同真實聊天 App（WhatsApp Web / Telegram Web）一致：
+     用 VisualViewport API 取得鍵盤彈出後的實際可視高度，把 .app 高度設成該值，
+     並抵銷 iOS 把整頁上捲的 offsetTop → 頂欄留在原位、輸入列貼住鍵盤頂。 */
+  (function keyboardFix(){
+    const vv = window.visualViewport;
+    if(!vv) return;                      // 舊瀏覽器：維持原本 100vh 行為
+    const root = document.documentElement;
+    const app  = document.getElementById('app');
+    let raf = 0;
+    function apply(){
+      raf = 0;
+      const kb = window.innerHeight - vv.height;   // 鍵盤高度（版面視口 - 可視視口）
+      const open = kb > 80;                         // >80px 視為鍵盤開啟
+      root.classList.toggle('kb-open', open);
+      if(open){
+        root.style.setProperty('--app-h', vv.height + 'px');   // 版面縮到鍵盤上方
+        app.style.transform = 'translateY(' + vv.offsetTop + 'px)';  // 抵銷 iOS 整頁上捲
+        if(State.openId){ const m = document.getElementById('msgs'); if(m) m.scrollTop = m.scrollHeight; }
+      }else{
+        root.style.removeProperty('--app-h');        // 鍵盤收起：還原 100vh
+        app.style.transform = '';
+        if(window.scrollY) window.scrollTo(0, 0);     // 修正殘留的整頁位移
+      }
+    }
+    const schedule = ()=>{ if(!raf) raf = requestAnimationFrame(apply); };
+    vv.addEventListener('resize', schedule);
+    vv.addEventListener('scroll', schedule);
+  })();
 
   (async function init(){ bind(); applyBg(getBg()); await Store.fetchChats(); renderList();
     if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{}); })();
