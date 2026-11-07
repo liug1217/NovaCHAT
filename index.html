@@ -94,16 +94,17 @@
       box-shadow: 0 6px 20px rgba(0,0,0,0.10);
       display: flex; align-items: center;
       padding: 0 4px;                    /* 內部按鈕區 390 寬 */
-      /* 底部可左右滑動 */
-      overflow-x: auto; overflow-y: hidden;
-      scroll-snap-type: x proximity;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: none;
-      overscroll-behavior-x: contain;
+      position: relative;                /* 給滑動膠囊定位 */
     }
-    .tabbar-inner::-webkit-scrollbar { display: none; }
+    /* 選中膠囊：在分頁間平滑滑動 */
+    .tab-lens {
+      position: absolute; top: 5px; height: 52px; left: 0; width: 0;
+      background: var(--nc-bar-active); border-radius: 999px; z-index: 0;
+      pointer-events: none;
+      transition: left .3s cubic-bezier(.34,1.2,.5,1), width .3s cubic-bezier(.34,1.2,.5,1);
+    }
     .tab {
-      flex: 0 0 84px; scroll-snap-align: center;
+      flex: 1; z-index: 1;
       height: 52px; border: 0; background: none; cursor: pointer;
       display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
       border-radius: 999px; color: #000; font-family: var(--sf);
@@ -112,7 +113,7 @@
     .tab .ico { width: 26px; height: 26px; display: grid; place-items: center; }
     .tab .ico svg { width: 24px; height: 24px; fill: currentColor; }
     .tab .lbl { font-size: 10px; line-height: 1; font-weight: 500; white-space: nowrap; }
-    .tab.active { background: var(--nc-bar-active); color: var(--nc-blue); }
+    .tab.active { color: var(--nc-blue); }   /* 底色由滑動膠囊 .tab-lens 提供 */
 
     /* 桌面：畫板加圓角外框更像裝置 */
     @media (min-width: 480px) and (min-height: 980px) {
@@ -144,6 +145,7 @@
       <!-- 底部 Tab Bar（iOS 27，5 格，依 Figma）-->
       <nav class="tabbar" aria-label="主導覽">
         <div class="tabbar-inner" id="tabbar">
+          <span class="tab-lens" id="tabLens" aria-hidden="true"></span>
           <button class="tab active" data-tab="t1" aria-current="page">
             <span class="ico"><svg viewBox="0 0 24 24"><path d="M12 2.5l9.5 9.5L12 21.5 2.5 12 12 2.5z"/></svg></span>
             <span class="lbl">Tab 1</span>
@@ -181,34 +183,28 @@
     window.addEventListener('orientationchange', fit);
     fit();
 
-    // Tab 切換（視覺；頁面內容為後續階段，不放假頁面）
-    document.getElementById('tabbar').addEventListener('click', (e) => {
+    // Tab 切換 + 選中膠囊在分頁間滑動
+    const tabbarEl = document.getElementById('tabbar');
+    const lensEl = document.getElementById('tabLens');
+    function moveLens(tab) {
+      if (!tab) return;
+      lensEl.style.left = tab.offsetLeft + 'px';
+      lensEl.style.width = tab.offsetWidth + 'px';
+    }
+    tabbarEl.addEventListener('click', (e) => {
       const tab = e.target.closest('.tab'); if (!tab) return;
       document.querySelectorAll('.tab').forEach((t) => {
         const on = t === tab;
         t.classList.toggle('active', on);
         if (on) t.setAttribute('aria-current', 'page'); else t.removeAttribute('aria-current');
       });
+      moveLens(tab);
     });
-
-    // 底部左右滑動：手機原生觸控已支援；桌面補滑鼠拖曳
-    (function () {
-      const bar = document.getElementById('tabbar');
-      let down = false, startX = 0, startLeft = 0, moved = false;
-      bar.addEventListener('pointerdown', (e) => { down = true; moved = false; startX = e.clientX; startLeft = bar.scrollLeft; });
-      bar.addEventListener('pointermove', (e) => {
-        if (!down) return;
-        const dx = e.clientX - startX;
-        if (Math.abs(dx) > 4) moved = true;
-        bar.scrollLeft = startLeft - dx;
-      });
-      const end = () => { down = false; };
-      bar.addEventListener('pointerup', end);
-      bar.addEventListener('pointercancel', end);
-      bar.addEventListener('pointerleave', end);
-      // 拖曳時不要誤觸選中
-      bar.addEventListener('click', (e) => { if (moved) { e.stopPropagation(); e.preventDefault(); } }, true);
-    })();
+    // 初始定位（含字體載入 / 視窗變化後重算）
+    const relocate = () => moveLens(document.querySelector('.tab.active'));
+    requestAnimationFrame(relocate);
+    window.addEventListener('resize', relocate);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(relocate);
 
     // Service worker（離線 / 可安裝）
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
