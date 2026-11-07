@@ -24,7 +24,7 @@ HOST = os.environ.get('NOVACHAT_HOST', '0.0.0.0')
 ROOT = os.path.dirname(os.path.abspath(__file__))
 
 # 只開放網站本身的檔案
-PUBLIC_FILES = {'/index.html', '/sw.js', '/manifest.json'}
+PUBLIC_FILES = {'/NovaCHAT.html', '/index.html', '/sw.js', '/manifest.json'}
 PUBLIC_DIRS = ('/assets/',)
 
 
@@ -50,7 +50,7 @@ class Handler(SimpleHTTPRequestHandler):
             return self.send_json(501, {'error': 'not_implemented', 'hint': 'chat backend is Phase 2'})
         if path in ('/', '/index.html'):
             self.send_response(302)
-            self.send_header('Location', '/index.html')
+            self.send_header('Location', '/NovaCHAT.html')
             self.end_headers()
             return
         if (path in PUBLIC_FILES or path.startswith(PUBLIC_DIRS)) and '..' not in path:

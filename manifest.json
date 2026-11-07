@@ -2,7 +2,7 @@
   "name": "NovaCHAT",
   "short_name": "NovaCHAT",
   "description": "NovaCHAT — Connect Everything. 聊天、群組、即時通訊。",
-  "start_url": "./index.html",
+  "start_url": "./NovaCHAT.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",

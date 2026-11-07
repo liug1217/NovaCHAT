@@ -3,9 +3,9 @@
 //    - index.html：先上網抓最新（3 秒內沒回應就用存的），一更新馬上生效
 //    - 其他檔案：先用存的秒開，背景再更新
 //  - 聊天後端 /api/* 不快取，照常連網（之後接真後端用）
-const CACHE = 'novachat-v2';
-const PRECACHE = ['./index.html', './manifest.json'];
-const PAGE = new URL('./index.html', self.location).href;
+const CACHE = 'novachat-v3';
+const PRECACHE = ['./NovaCHAT.html', './index.html', './manifest.json'];
+const PAGE = new URL('./NovaCHAT.html', self.location).href;
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((c) => c.addAll(PRECACHE.map((u) => new Request(u, { cache: 'reload' })))));
@@ -47,7 +47,7 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin || url.pathname.includes('/api/')) return;
   if (request.headers.has('range')) return;
-  if (request.mode === 'navigate' || url.pathname.endsWith('/index.html') || url.pathname.endsWith('/')) {
+  if (request.mode === 'navigate' || url.pathname.endsWith('/NovaCHAT.html') || url.pathname.endsWith('/index.html') || url.pathname.endsWith('/')) {
     event.respondWith(pageRequest(request));
     return;
   }
