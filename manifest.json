@@ -1,0 +1,11 @@
+{
+  "name": "NovaCHAT",
+  "short_name": "NovaCHAT",
+  "description": "NovaCHAT — Connect Everything. 聊天、群組、即時通訊。",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff"
+}

@@ -1,0 +1,7 @@
+# 聊天資料（之後真後端用）
+chat-data.json
+chat-data.json.tmp
+push.json
+__pycache__/
+*.pyc
+.DS_Store
