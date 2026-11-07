@@ -90,7 +90,7 @@
       backdrop-filter: saturate(180%) blur(20px);
       -webkit-backdrop-filter: saturate(180%) blur(20px);
       border: 0.5px solid rgba(0,0,0,0.08);
-      border-radius: 31px;               /* Figma: 高 62 的 pill */
+      border-radius: 999px;              /* 完整圓角（膠囊）*/
       box-shadow: 0 6px 20px rgba(0,0,0,0.10);
       display: flex; align-items: center;
       padding: 0 4px;                    /* 內部按鈕區 390 寬 */
@@ -98,7 +98,7 @@
     .tab {
       flex: 1; height: 52px; border: 0; background: none; cursor: pointer;
       display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
-      border-radius: 22px; color: #000; font-family: var(--sf);
+      border-radius: 999px; color: #000; font-family: var(--sf);
       position: relative;
     }
     .tab .ico { width: 26px; height: 26px; display: grid; place-items: center; }
