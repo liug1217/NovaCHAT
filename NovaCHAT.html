@@ -26,7 +26,7 @@
       --nc-badge: #ff3b30;
       --nc-online: #34c759;
       --nc-bubble-me: #95ec69;   /* 訊息氣泡：LINE / 微信 那種綠 */
-      --nc-bubble-them: #e9e9eb;
+      --nc-bubble-them: #ffffff;   /* 別人傳來的訊息：純白 */
       --sf: -apple-system, "SF Pro Text", "SF Pro", system-ui, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
       --inter: "Inter", -apple-system, system-ui, "Noto Sans TC", sans-serif;
     }
@@ -110,7 +110,8 @@
     /* 背景套在固定大小的對話容器上（不是會捲動的 .msgs），避免照片被放大 */
     .convo { position: absolute; inset: 0; z-index: 20; background: #fff; background-size: cover; background-position: center; background-repeat: no-repeat; display: flex; flex-direction: column; transform: translateX(100%); transition: transform .28s cubic-bezier(.4,0,.2,1); visibility: hidden; }
     .convo.open { transform: translateX(0); visibility: visible; }
-    .convo-header { flex: 0 0 auto; display: flex; align-items: center; gap: 10px; padding: calc(env(safe-area-inset-top, 0px) + 12px) 12px 10px; border-bottom: 0.5px solid var(--nc-sep); background: rgba(255,255,255,.92); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); z-index: 2; }
+    /* 頂部透明：照片透到最上（無白底、無分隔線）*/
+    .convo-header { flex: 0 0 auto; display: flex; align-items: center; gap: 10px; padding: calc(env(safe-area-inset-top, 0px) + 12px) 12px 10px; border-bottom: 0; background: transparent; z-index: 2; }
     .convo-back { border: 0; background: none; color: #000; cursor: pointer; display: grid; place-items: center; width: 32px; height: 32px; flex: 0 0 auto; }
     .convo-back svg { width: 24px; height: 24px; }
     .convo-av { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 600; font-size: 14px; flex: 0 0 auto; }
@@ -130,7 +131,8 @@
     .bubble .mt { font-size: 10px; opacity: .6; margin-left: 8px; float: right; margin-top: 6px; }
     .bubble.me .mt { color: #000; }
     /* 半透明毛玻璃：讓聊天背景透到底部、真正全螢幕 */
-    .composer { flex: 0 0 auto; display: flex; align-items: flex-end; gap: 8px; padding: 8px 12px calc(10px + env(safe-area-inset-bottom)); border-top: 0.5px solid var(--nc-sep); background: rgba(255,255,255,.86); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+    /* 底部透明：照片透到最下（無白底、無分隔線）*/
+    .composer { flex: 0 0 auto; display: flex; align-items: flex-end; gap: 8px; padding: 8px 12px calc(10px + env(safe-area-inset-bottom)); border-top: 0; background: transparent; }
     .composer .plus { border: 0; background: none; color: #000; cursor: pointer; width: 34px; height: 34px; flex: 0 0 auto; display: grid; place-items: center; }
     .composer .plus svg { width: 26px; height: 26px; }
     .composer .field { flex: 1; min-width: 0; display: flex; align-items: center; background: var(--nc-fill-secondary); border-radius: 20px; padding: 7px 14px; }
@@ -313,8 +315,7 @@
   function msgHTML(m, c){
     const mine=m.from==='me';
     const who=(!mine && c.type==='group')?`<span class="who">${esc(m.from)}</span>`:'';
-    const tk=mine?(m.status==='read'?`<span style="margin-left:4px">${ICON.tick2}</span>`:`<span style="margin-left:4px">${ICON.tick1}</span>`):'';
-    return `<div class="bubble ${mine?'me':'them'}">${who}${esc(m.text)}<span class="mt">${esc(m.t)}${mine?tk:''}</span></div>`;
+    return `<div class="bubble ${mine?'me':'them'}">${who}${esc(m.text)}<span class="mt">${esc(m.t)}</span></div>`;
   }
   function openConvo(id){
     const c=Store.get(id); if(!c) return;
