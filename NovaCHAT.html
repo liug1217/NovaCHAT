@@ -35,14 +35,14 @@
     html { height: 100%; overflow: hidden; }
     body {
       position: fixed; inset: 0; width: 100%; height: 100%; overflow: hidden;
-      background: #e5e5ea; font-family: var(--sf); display: flex; justify-content: center;
+      background: #fff; font-family: var(--sf); display: flex; justify-content: center;
       overscroll-behavior: none; touch-action: manipulation;
       -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
     }
     input, textarea { -webkit-user-select: text; user-select: text; }
 
     .app {
-      position: relative; width: 100%; height: 100vh; height: 100dvh;
+      position: relative; width: 100%; height: 100%;   /* 填滿固定的 body，不用 dvh/vh 避免底部露出一塊 */
       background: #fff; overflow: hidden; display: flex; flex-direction: column;
     }
 
