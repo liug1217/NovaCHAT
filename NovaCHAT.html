@@ -12,12 +12,12 @@
   <title>NovaCHAT</title>
   <style>
     /* ================================================================
-       NovaCHAT 聊天頁 — Figma「iPhone 18 Pro Max - 1」(440×956) 外殼 1:1
-       + 大更新：聊天列表 / 分類 / 即時搜尋 / 對話頁（只增不刪）
-       Figma 外殼精確值：
-       - 搜尋欄 fill rgba(120,120,128,0.16) / r100 / h35 / SF Pro 17 #727272
-       - 「聊天」Inter 12 #000 於 (62,149)
-       - Tab Bar iOS 27：浮動列 398×62 r滿 / 5 格 / Tab 1 選中（藍）
+       NovaCHAT 聊天頁 — 全螢幕響應式（填滿整個視窗，不留灰邊）
+       沿用 Figma 外殼樣式：
+       - 搜尋欄 fill rgba(120,120,128,0.16) / r100 / SF Pro 17 #727272
+       - 「聊天」Inter 12 #000
+       - Tab Bar iOS 27：浮動膠囊列 / 5 格（主頁/聊天/VIDEO/❌/我的）/ 聊天選中
+       + 聊天列表 / 分類 / 即時搜尋 / 對話頁
        ================================================================ */
     :root {
       --nc-blue: #007aff;
@@ -39,51 +39,37 @@
     }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
     html, body { height: 100%; }
-    body {
-      background: #c9ccd2; font-family: var(--sf);
-      display: flex; justify-content: center; align-items: flex-start; overflow: hidden;
-    }
-    #stage { position: fixed; inset: 0; display: grid; place-items: center; }
-    .artboard {
-      position: relative; width: 440px; height: 956px; background: #fff;
-      overflow: hidden; transform-origin: center center; flex: 0 0 auto;
+    body { background: #e5e5ea; font-family: var(--sf); display: flex; justify-content: center; overflow: hidden; }
+
+    /* 全螢幕 App：填滿視窗（桌面置中，最大寬 500）*/
+    .app {
+      position: relative; width: 100%; max-width: 500px; height: 100dvh;
+      background: #fff; overflow: hidden; display: flex; flex-direction: column;
     }
 
-    /* ---------- 外殼：搜尋欄（Figma 精確）---------- */
+    /* 頂部（搜尋 / 聊天 / 分類）—— 不捲動 */
+    .topbar { flex: 0 0 auto; padding: calc(env(safe-area-inset-top, 0px) + 14px) 16px 0; }
     .search {
-      position: absolute; left: 10px; top: 70px; width: 420px; height: 35px; z-index: 5;
-      display: flex; align-items: center; gap: 8px; padding: 0 11px;
+      width: 100%; height: 36px; display: flex; align-items: center; gap: 8px; padding: 0 11px;
       background: var(--nc-fill-secondary); border-radius: 100px;
     }
     .search .mag { width: 21px; height: 22px; flex: 0 0 auto; color: var(--nc-label-secondary); display: grid; place-items: center; }
     .search .mag svg { width: 16px; height: 16px; }
-    .search input {
-      flex: 1; min-width: 0; border: 0; background: transparent; outline: none;
-      font-family: var(--sf); font-size: 17px; line-height: 22px; letter-spacing: -0.08px; color: #000;
-    }
+    .search input { flex: 1; min-width: 0; border: 0; background: transparent; outline: none; font-family: var(--sf); font-size: 17px; line-height: 22px; letter-spacing: -0.08px; color: #000; }
     .search input::placeholder { color: var(--nc-label-secondary); opacity: 1; }
     .search .mic { width: 17px; height: 22px; flex: 0 0 auto; color: var(--nc-label-secondary); display: grid; place-items: center; }
     .search .mic svg { width: 15px; height: 20px; }
 
-    /* ---------- 外殼：「聊天」標題（Figma 精確）---------- */
-    .chat-label {
-      position: absolute; left: 62px; top: 149px; z-index: 5;
-      font-family: var(--inter); font-weight: 400; font-size: 12px; color: #000; white-space: nowrap;
-    }
+    .chat-label { margin: 16px 0 0 2px; font-family: var(--inter); font-weight: 400; font-size: 12px; color: #000; white-space: nowrap; }
 
-    /* ---------- 新增：分類 chips ---------- */
-    .chips { position: absolute; left: 0; right: 0; top: 170px; z-index: 4; display: flex; gap: 8px; padding: 0 16px; }
-    .chip {
-      border: 0; cursor: pointer; font-family: var(--sf); font-size: 14px; font-weight: 600;
-      background: var(--nc-chip); color: #3c3c43; padding: 7px 15px; border-radius: 100px;
-      display: inline-flex; align-items: center; gap: 6px;
-    }
+    .chips { display: flex; gap: 8px; margin-top: 12px; }
+    .chip { border: 0; cursor: pointer; font-family: var(--sf); font-size: 14px; font-weight: 600; background: var(--nc-chip); color: #3c3c43; padding: 7px 15px; border-radius: 100px; display: inline-flex; align-items: center; gap: 6px; }
     .chip.active { background: var(--nc-blue); color: #fff; }
     .chip .cnt { background: var(--nc-badge); color: #fff; font-size: 11px; font-weight: 700; border-radius: 100px; padding: 0 6px; min-width: 18px; text-align: center; }
     .chip.active .cnt { background: rgba(255,255,255,.3); }
 
-    /* ---------- 新增：聊天列表 ---------- */
-    .list { position: absolute; left: 0; right: 0; top: 214px; bottom: 95px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+    /* 聊天列表 —— 填滿剩餘高度、可捲動 */
+    .list { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-top: 6px; }
     .list::-webkit-scrollbar { width: 0; }
     .crow { display: flex; align-items: center; gap: 12px; padding: 9px 16px; cursor: pointer; position: relative; }
     .crow:active { background: rgba(0,0,0,0.04); }
@@ -108,16 +94,15 @@
     .cmute { color: var(--nc-text-2); flex: 0 0 auto; display: inline-flex; }
     .cmute svg { width: 16px; height: 16px; }
 
-    /* 空狀態 */
     .empty { display: none; text-align: center; color: var(--nc-text-2); padding: 64px 32px; }
     .empty svg { width: 46px; height: 46px; opacity: .4; margin-bottom: 12px; }
     .empty h3 { font-size: 16px; color: #3c3c43; margin-bottom: 4px; font-weight: 600; }
     .empty p { font-size: 14px; }
 
-    /* ---------- 外殼：Tab Bar（Figma 精確 + 滑動膠囊）---------- */
-    .tabbar { position: absolute; left: 0; top: 861px; width: 440px; height: 95px; z-index: 6; display: flex; align-items: flex-start; justify-content: center; padding: 12px 0 0; }
+    /* Tab Bar —— 固定底部（含安全區），浮動膠囊列 */
+    .tabbar { flex: 0 0 auto; display: flex; justify-content: center; padding: 8px 16px calc(8px + env(safe-area-inset-bottom, 0px)); }
     .tabbar-inner {
-      width: 398px; height: 62px; background: var(--nc-bar-fill);
+      width: 100%; height: 62px; background: var(--nc-bar-fill);
       backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px);
       border: 0.5px solid rgba(0,0,0,0.08); border-radius: 999px;
       box-shadow: 0 6px 20px rgba(0,0,0,0.10); display: flex; align-items: center; padding: 0 4px; position: relative;
@@ -129,18 +114,10 @@
     .tab .lbl { font-size: 10px; line-height: 1; font-weight: 500; white-space: nowrap; }
     .tab.active { color: var(--nc-blue); }
 
-    /* ---------- 新增：對話頁（滑入覆蓋）---------- */
-    .convo {
-      position: absolute; inset: 0; z-index: 20; background: var(--nc-convo-bg);
-      display: flex; flex-direction: column;
-      transform: translateX(100%); transition: transform .28s cubic-bezier(.4,0,.2,1); visibility: hidden;
-    }
+    /* 對話頁（滑入覆蓋整個 App）*/
+    .convo { position: absolute; inset: 0; z-index: 20; background: var(--nc-convo-bg); display: flex; flex-direction: column; transform: translateX(100%); transition: transform .28s cubic-bezier(.4,0,.2,1); visibility: hidden; }
     .convo.open { transform: translateX(0); visibility: visible; }
-    .convo-header {
-      flex: 0 0 auto; display: flex; align-items: center; gap: 10px; padding: 54px 12px 10px;
-      border-bottom: 0.5px solid var(--nc-sep); background: rgba(255,255,255,.92);
-      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-    }
+    .convo-header { flex: 0 0 auto; display: flex; align-items: center; gap: 10px; padding: calc(env(safe-area-inset-top, 0px) + 12px) 12px 10px; border-bottom: 0.5px solid var(--nc-sep); background: rgba(255,255,255,.92); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
     .convo-back { border: 0; background: none; color: var(--nc-blue); cursor: pointer; display: grid; place-items: center; width: 32px; height: 32px; flex: 0 0 auto; }
     .convo-back svg { width: 24px; height: 24px; }
     .convo-av { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 600; font-size: 14px; flex: 0 0 auto; }
@@ -150,9 +127,8 @@
     .convo-actions { margin-left: auto; display: flex; gap: 4px; flex: 0 0 auto; }
     .convo-actions button { border: 0; background: none; color: var(--nc-blue); cursor: pointer; width: 34px; height: 34px; display: grid; place-items: center; }
     .convo-actions svg { width: 22px; height: 22px; }
-    .msgs { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 14px 12px 8px; display: flex; flex-direction: column; gap: 3px; }
+    .msgs { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 14px 12px 8px; display: flex; flex-direction: column; gap: 3px; }
     .msgs::-webkit-scrollbar { width: 0; }
-    .daysep { align-self: center; font-size: 12px; color: var(--nc-text-2); margin: 8px 0; }
     .bubble { max-width: 76%; padding: 8px 13px; border-radius: 20px; font-size: 16px; line-height: 1.35; word-break: break-word; position: relative; }
     .bubble.them { align-self: flex-start; background: var(--nc-bubble-them); color: #000; border-bottom-left-radius: 6px; }
     .bubble.me { align-self: flex-end; background: var(--nc-bubble-me); color: #fff; border-bottom-right-radius: 6px; }
@@ -168,84 +144,72 @@
     .composer .send:disabled { opacity: .35; }
     .composer .send svg { width: 20px; height: 20px; }
 
-    /* toast */
-    .toast { position: absolute; left: 50%; bottom: 120px; transform: translate(-50%, 10px); opacity: 0; pointer-events: none; z-index: 40; background: rgba(0,0,0,.82); color: #fff; padding: 9px 16px; border-radius: 100px; font-size: 13px; transition: opacity .2s, transform .2s; white-space: nowrap; }
+    .toast { position: absolute; left: 50%; bottom: calc(96px + env(safe-area-inset-bottom)); transform: translate(-50%, 10px); opacity: 0; pointer-events: none; z-index: 40; background: rgba(0,0,0,.82); color: #fff; padding: 9px 16px; border-radius: 100px; font-size: 13px; transition: opacity .2s, transform .2s; white-space: nowrap; }
     .toast.show { opacity: 1; transform: translate(-50%, 0); }
-
-    @media (min-width: 480px) and (min-height: 980px) {
-      .artboard { border-radius: 44px; box-shadow: 0 20px 60px rgba(0,0,0,0.28); }
-    }
   </style>
 </head>
 <body>
-  <div id="stage">
-    <main class="artboard" id="artboard" role="application" aria-label="NovaCHAT 聊天">
+  <main class="app" id="app" role="application" aria-label="NovaCHAT 聊天">
 
-      <!-- 外殼：搜尋欄 -->
+    <!-- 頂部：搜尋 / 聊天 / 分類 -->
+    <div class="topbar">
       <div class="search" role="search">
         <span class="mag" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></span>
         <input id="searchInput" type="search" placeholder="搜尋" aria-label="搜尋" autocomplete="off">
         <span class="mic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 18v3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
       </div>
-
-      <!-- 外殼：「聊天」 -->
       <div class="chat-label">聊天</div>
-
-      <!-- 新增：分類 -->
       <nav class="chips" id="chips" aria-label="聊天分類">
         <button class="chip active" data-filter="all">全部</button>
         <button class="chip" data-filter="unread">未讀 <span class="cnt" id="unreadCnt">0</span></button>
         <button class="chip" data-filter="group">群組</button>
       </nav>
+    </div>
 
-      <!-- 新增：聊天列表 -->
-      <section class="list" id="list" aria-label="聊天列表"></section>
-      <div class="empty" id="empty">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        <h3 id="emptyTitle">沒有聊天</h3>
-        <p id="emptyDesc">開始一段新的對話吧</p>
+    <!-- 聊天列表 -->
+    <section class="list" id="list" aria-label="聊天列表"></section>
+    <div class="empty" id="empty">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <h3 id="emptyTitle">沒有聊天</h3>
+      <p id="emptyDesc">開始一段新的對話吧</p>
+    </div>
+
+    <!-- Tab Bar -->
+    <nav class="tabbar" aria-label="主導覽">
+      <div class="tabbar-inner" id="tabbar">
+        <span class="tab-lens" id="tabLens" aria-hidden="true"></span>
+        <button class="tab" data-tab="home"><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 2.5l9.5 9.5L12 21.5 2.5 12 12 2.5z"/></svg></span><span class="lbl">主頁</span></button>
+        <button class="tab active" data-tab="chat" aria-current="page"><span class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/></svg></span><span class="lbl">聊天</span></button>
+        <button class="tab" data-tab="video"><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 3l9.5 16.5H2.5L12 3z"/></svg></span><span class="lbl">VIDEO</span></button>
+        <button class="tab" data-tab="seal"><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 2c1 0 1.9.6 2.3 1.5.9-.5 2-.4 2.8.3.8.7 1 1.8.6 2.7.9.3 1.5 1.2 1.5 2.2s-.6 1.9-1.5 2.2c.4.9.2 2-.6 2.7-.8.7-1.9.8-2.8.3-.4.9-1.3 1.5-2.3 1.5s-1.9-.6-2.3-1.5c-.9.5-2 .4-2.8-.3-.8-.7-1-1.8-.6-2.7C3.6 13.9 3 13 3 12s.6-1.9 1.5-2.2c-.4-.9-.2-2 .6-2.7.8-.7 1.9-.8 2.8-.3C10.1 2.6 11 2 12 2z"/></svg></span><span class="lbl">❌</span></button>
+        <button class="tab" data-tab="me"><span class="ico"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/></svg></span><span class="lbl">我的</span></button>
       </div>
+    </nav>
 
-      <!-- 外殼：Tab Bar -->
-      <nav class="tabbar" aria-label="主導覽">
-        <div class="tabbar-inner" id="tabbar">
-          <span class="tab-lens" id="tabLens" aria-hidden="true"></span>
-          <button class="tab" data-tab="home"><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 2.5l9.5 9.5L12 21.5 2.5 12 12 2.5z"/></svg></span><span class="lbl">主頁</span></button>
-          <button class="tab active" data-tab="chat" aria-current="page"><span class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/></svg></span><span class="lbl">聊天</span></button>
-          <button class="tab" data-tab="video"><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 3l9.5 16.5H2.5L12 3z"/></svg></span><span class="lbl">VIDEO</span></button>
-          <button class="tab" data-tab="seal"><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 2c1 0 1.9.6 2.3 1.5.9-.5 2-.4 2.8.3.8.7 1 1.8.6 2.7.9.3 1.5 1.2 1.5 2.2s-.6 1.9-1.5 2.2c.4.9.2 2-.6 2.7-.8.7-1.9.8-2.8.3-.4.9-1.3 1.5-2.3 1.5s-1.9-.6-2.3-1.5c-.9.5-2 .4-2.8-.3-.8-.7-1-1.8-.6-2.7C3.6 13.9 3 13 3 12s.6-1.9 1.5-2.2c-.4-.9-.2-2 .6-2.7.8-.7 1.9-.8 2.8-.3C10.1 2.6 11 2 12 2z"/></svg></span><span class="lbl">❌</span></button>
-          <button class="tab" data-tab="me"><span class="ico"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/></svg></span><span class="lbl">我的</span></button>
-        </div>
-      </nav>
+    <!-- 對話頁 -->
+    <section class="convo" id="convo" aria-label="對話" aria-hidden="true">
+      <header class="convo-header">
+        <button class="convo-back" id="convoBack" aria-label="返回"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+        <span class="convo-av" id="convoAv"></span>
+        <span class="convo-title"><span class="convo-name" id="convoName"></span><span class="convo-sub" id="convoSub"></span></span>
+        <span class="convo-actions">
+          <button aria-label="語音通話" data-act="voice"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.6A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.4-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg></button>
+          <button aria-label="視訊通話" data-act="video"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></button>
+        </span>
+      </header>
+      <div class="msgs" id="msgs"></div>
+      <form class="composer" id="composer">
+        <button type="button" class="plus" aria-label="更多"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+        <div class="field"><textarea id="msgInput" rows="1" placeholder="訊息" aria-label="輸入訊息"></textarea></div>
+        <button type="submit" class="send" id="sendBtn" aria-label="傳送" disabled><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3.4 20.4l17.4-8.4a.6.6 0 0 0 0-1.1L3.4 2.6a.6.6 0 0 0-.9.7L4.7 10l9.3 2-9.3 2-2.2 6.7a.6.6 0 0 0 .9.7z"/></svg></button>
+      </form>
+    </section>
 
-      <!-- 新增：對話頁 -->
-      <section class="convo" id="convo" aria-label="對話" aria-hidden="true">
-        <header class="convo-header">
-          <button class="convo-back" id="convoBack" aria-label="返回"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
-          <span class="convo-av" id="convoAv"></span>
-          <span class="convo-title"><span class="convo-name" id="convoName"></span><span class="convo-sub" id="convoSub"></span></span>
-          <span class="convo-actions">
-            <button aria-label="語音通話" data-act="voice"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.6A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.4-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg></button>
-            <button aria-label="視訊通話" data-act="video"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></button>
-          </span>
-        </header>
-        <div class="msgs" id="msgs"></div>
-        <form class="composer" id="composer">
-          <button type="button" class="plus" aria-label="更多"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
-          <div class="field"><textarea id="msgInput" rows="1" placeholder="訊息" aria-label="輸入訊息"></textarea></div>
-          <button type="submit" class="send" id="sendBtn" aria-label="傳送" disabled><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3.4 20.4l17.4-8.4a.6.6 0 0 0 0-1.1L3.4 2.6a.6.6 0 0 0-.9.7L4.7 10l9.3 2-9.3 2-2.2 6.7a.6.6 0 0 0 .9.7z"/></svg></button>
-        </form>
-      </section>
-
-      <div class="toast" id="toast"></div>
-    </main>
-  </div>
+    <div class="toast" id="toast"></div>
+  </main>
 
   <script>
-  /* =========================================================================
-     NovaCHAT — 資料層 Store（唯一與「後端」溝通處）
-     目前用本地範例資料 SEED，非偽造後端；之後把方法換成 fetch('/api/...') 即可。
-     ========================================================================= */
+  /* NovaCHAT — 資料層 Store（本地範例 SEED；之後換成 fetch('/api/...')，非偽造後端）*/
   const SEED = {
     me: 'me',
     chats: [
@@ -269,17 +233,14 @@
   };
   const Store = {
     _c: [],
-    async fetchChats(){ /* TODO 後端: fetch('/api/chats') */ this._c = SEED.chats.map(c => ({...c, msgs:[...c.msgs]})); return this._c; },
+    async fetchChats(){ this._c = SEED.chats.map(c => ({...c, msgs:[...c.msgs]})); return this._c; },
     all(){ return this._c; },
     get(id){ return this._c.find(c => c.id === id); },
     unreadTotal(){ return this._c.reduce((n,c)=>n+(c.unread||0),0); },
-    send(id, text){ /* TODO 後端: POST /api/messages */
-      const c = this.get(id); if(!c) return;
-      const t = new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit',hour12:false});
-      c.msgs.push({ from:'me', text, t, status:'delivered' });
-      c.time = t; c.unread = 0;
-    },
-    markRead(id){ const c = this.get(id); if(c) c.unread = 0; },
+    send(id, text){ const c=this.get(id); if(!c) return;
+      const t=new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit',hour12:false});
+      c.msgs.push({ from:'me', text, t, status:'delivered' }); c.time=t; c.unread=0; },
+    markRead(id){ const c=this.get(id); if(c) c.unread=0; },
   };
 
   const State = { filter:'all', query:'', openId:null };
@@ -293,7 +254,6 @@
     mute:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M23 9l-6 6M17 9l6 6"/></svg>',
   };
 
-  /* ---------- 列表 ---------- */
   function match(c){
     if(State.filter==='unread' && !(c.unread>0)) return false;
     if(State.filter==='group' && c.type!=='group') return false;
@@ -302,17 +262,12 @@
     return true;
   }
   function rowHTML(c){
-    const last=c.msgs[c.msgs.length-1];
-    const unread=c.unread>0;
-    let prev='';
+    const last=c.msgs[c.msgs.length-1]; const unread=c.unread>0; let prev='';
     if(last){
       if(last.from==='me'){
         const tk=last.status==='read'?`<span class="ticks read">${ICON.tick2}</span>`:`<span class="ticks">${ICON.tick1}</span>`;
         prev=`${tk}<span class="cprev"><span class="by">你：</span>${esc(last.text)}</span>`;
-      } else {
-        const by=c.type==='group'?`<span class="by">${esc(last.from)}：</span>`:'';
-        prev=`<span class="cprev">${by}${esc(last.text)}</span>`;
-      }
+      } else { const by=c.type==='group'?`<span class="by">${esc(last.from)}：</span>`:''; prev=`<span class="cprev">${by}${esc(last.text)}</span>`; }
     }
     const right=unread?`<span class="cbadge">${c.unread>99?'99+':c.unread}</span>`:(c.muted?`<span class="cmute">${ICON.mute}</span>`:'');
     const extra=c.type==='group'?`<span class="gb">${ICON.group}</span>`:(c.online?'<span class="dot"></span>':'');
@@ -325,18 +280,13 @@
     const rows=Store.all().filter(match);
     $('#list').innerHTML=rows.map(rowHTML).join('');
     const empty=rows.length===0;
-    $('#empty').style.display=empty?'block':'none';
-    $('#list').style.display=empty?'none':'block';
-    if(empty){
-      const s=State.query.trim();
+    $('#empty').style.display=empty?'block':'none'; $('#list').style.display=empty?'none':'block';
+    if(empty){ const s=State.query.trim();
       $('#emptyTitle').textContent=s?'找不到結果':'沒有聊天';
-      $('#emptyDesc').textContent=s?`沒有符合「${s}」的好友、群組或訊息`:(State.filter==='unread'?'目前沒有未讀訊息':'開始一段新的對話吧');
-    }
-    const n=Store.unreadTotal();
-    $('#unreadCnt').textContent=n; $('#unreadCnt').style.display=n?'inline-block':'none';
+      $('#emptyDesc').textContent=s?`沒有符合「${s}」的好友、群組或訊息`:(State.filter==='unread'?'目前沒有未讀訊息':'開始一段新的對話吧'); }
+    const n=Store.unreadTotal(); $('#unreadCnt').textContent=n; $('#unreadCnt').style.display=n?'inline-block':'none';
   }
 
-  /* ---------- 對話頁 ---------- */
   function msgHTML(m, c){
     const mine=m.from==='me';
     const who=(!mine && c.type==='group')?`<span class="who">${esc(m.from)}</span>`:'';
@@ -355,7 +305,6 @@
   }
   function closeConvo(){ const co=$('#convo'); co.classList.remove('open'); co.setAttribute('aria-hidden','true'); State.openId=null; renderList(); }
 
-  /* ---------- 事件 ---------- */
   function bind(){
     const inp=$('#searchInput');
     inp.addEventListener('input',()=>{ State.query=inp.value; renderList(); });
@@ -364,7 +313,6 @@
     $('#convoBack').addEventListener('click',closeConvo);
     document.querySelectorAll('.convo-actions button').forEach(b=>b.addEventListener('click',()=>toast(b.dataset.act==='voice'?'語音通話（下一階段）':'視訊通話（下一階段）')));
 
-    // 送訊息
     const ta=$('#msgInput'), send=$('#sendBtn');
     const refresh=()=>{ send.disabled=ta.value.trim()===''; ta.style.height='auto'; ta.style.height=Math.min(ta.scrollHeight,90)+'px'; };
     ta.addEventListener('input',refresh);
@@ -377,7 +325,6 @@
     });
     $('.composer .plus').addEventListener('click',()=>toast('附件 / 圖片（下一階段）'));
 
-    // Tab 切換 + 滑動膠囊
     const tabbar=$('#tabbar'), lens=$('#tabLens');
     const moveLens=(t)=>{ if(!t) return; lens.style.left=t.offsetLeft+'px'; lens.style.width=t.offsetWidth+'px'; };
     tabbar.addEventListener('click',(e)=>{ const t=e.target.closest('.tab'); if(!t) return;
@@ -389,10 +336,7 @@
   }
   function toast(m){ const t=$('#toast'); t.textContent=m; t.classList.add('show'); clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove('show'),1600); }
 
-  function fit(){ const pad=window.innerWidth<480?0:24; const s=Math.min((window.innerWidth-pad)/440,(window.innerHeight-pad)/956); $('#artboard').style.transform='scale('+s+')'; }
-  window.addEventListener('resize',fit); window.addEventListener('orientationchange',fit);
-
-  (async function init(){ fit(); bind(); await Store.fetchChats(); renderList();
+  (async function init(){ bind(); await Store.fetchChats(); renderList();
     if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{}); })();
   </script>
 </body>
