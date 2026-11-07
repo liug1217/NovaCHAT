@@ -33,8 +33,9 @@
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
     /* 鎖定：全螢幕、不捲動頁面、不放大、不橡皮筋、不選取/長按選單 */
     html { height: 100%; overflow: hidden; }
+    /* 照 Group：body 不用 position:fixed（那會在 iOS 底部安全區留出一塊）；正常流 + 禁止橡皮筋 */
     body {
-      position: fixed; inset: 0; width: 100%; height: 100%; overflow: hidden;
+      min-height: 100%; width: 100%; overflow: hidden;
       background: #fff; font-family: var(--sf); display: flex; justify-content: center;
       overscroll-behavior: none; touch-action: manipulation;
       -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
@@ -42,7 +43,7 @@
     input, textarea { -webkit-user-select: text; user-select: text; }
 
     .app {
-      position: relative; width: 100%; height: 100%;   /* 填滿固定的 body，不用 dvh/vh 避免底部露出一塊 */
+      position: relative; width: 100%; height: 100vh; height: 100dvh;  /* 可見視窗高度 */
       background: #fff; overflow: hidden; display: flex; flex-direction: column;
     }
 
