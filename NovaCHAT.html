@@ -2,7 +2,8 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <!-- 全螢幕 + 鎖定縮放（照 Group.html）：畫到整個螢幕、禁止雙指/雙擊放大 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -11,14 +12,6 @@
   <link rel="manifest" href="manifest.json">
   <title>NovaCHAT</title>
   <style>
-    /* ================================================================
-       NovaCHAT 聊天頁 — 全螢幕響應式（填滿整個視窗，不留灰邊）
-       沿用 Figma 外殼樣式：
-       - 搜尋欄 fill rgba(120,120,128,0.16) / r100 / SF Pro 17 #727272
-       - 「聊天」Inter 12 #000
-       - Tab Bar iOS 27：浮動膠囊列 / 5 格（主頁/聊天/VIDEO/❌/我的）/ 聊天選中
-       + 聊天列表 / 分類 / 即時搜尋 / 對話頁
-       ================================================================ */
     :root {
       --nc-blue: #007aff;
       --nc-fill-secondary: rgba(120,120,128,0.16);
@@ -33,43 +26,43 @@
       --nc-online: #34c759;
       --nc-bubble-me: #007aff;
       --nc-bubble-them: #e9e9eb;
-      --nc-convo-bg: #ffffff;
       --sf: -apple-system, "SF Pro Text", "SF Pro", system-ui, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
       --inter: "Inter", -apple-system, system-ui, "Noto Sans TC", sans-serif;
     }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
-    html, body { height: 100%; }
-    body { background: #e5e5ea; font-family: var(--sf); display: flex; justify-content: center; overflow: hidden; }
+    /* 鎖定：全螢幕、不捲動頁面、不放大、不橡皮筋、不選取/長按選單 */
+    html { height: 100%; overflow: hidden; }
+    body {
+      position: fixed; inset: 0; width: 100%; height: 100%; overflow: hidden;
+      background: #e5e5ea; font-family: var(--sf); display: flex; justify-content: center;
+      overscroll-behavior: none; touch-action: manipulation;
+      -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+    }
+    input, textarea { -webkit-user-select: text; user-select: text; }
 
-    /* 全螢幕 App：填滿視窗（桌面置中，最大寬 500）*/
     .app {
       position: relative; width: 100%; max-width: 500px; height: 100dvh;
       background: #fff; overflow: hidden; display: flex; flex-direction: column;
     }
 
-    /* 頂部（搜尋 / 聊天 / 分類）—— 不捲動 */
+    /* 頂部 */
     .topbar { flex: 0 0 auto; padding: calc(env(safe-area-inset-top, 0px) + 14px) 16px 0; }
-    .search {
-      width: 100%; height: 36px; display: flex; align-items: center; gap: 8px; padding: 0 11px;
-      background: var(--nc-fill-secondary); border-radius: 100px;
-    }
+    .search { width: 100%; height: 36px; display: flex; align-items: center; gap: 8px; padding: 0 11px; background: var(--nc-fill-secondary); border-radius: 100px; }
     .search .mag { width: 21px; height: 22px; flex: 0 0 auto; color: var(--nc-label-secondary); display: grid; place-items: center; }
     .search .mag svg { width: 16px; height: 16px; }
     .search input { flex: 1; min-width: 0; border: 0; background: transparent; outline: none; font-family: var(--sf); font-size: 17px; line-height: 22px; letter-spacing: -0.08px; color: #000; }
     .search input::placeholder { color: var(--nc-label-secondary); opacity: 1; }
     .search .mic { width: 17px; height: 22px; flex: 0 0 auto; color: var(--nc-label-secondary); display: grid; place-items: center; }
     .search .mic svg { width: 15px; height: 20px; }
-
     .chat-label { margin: 16px 0 0 2px; font-family: var(--inter); font-weight: 400; font-size: 12px; color: #000; white-space: nowrap; }
-
     .chips { display: flex; gap: 8px; margin-top: 12px; }
     .chip { border: 0; cursor: pointer; font-family: var(--sf); font-size: 14px; font-weight: 600; background: var(--nc-chip); color: #3c3c43; padding: 7px 15px; border-radius: 100px; display: inline-flex; align-items: center; gap: 6px; }
     .chip.active { background: var(--nc-blue); color: #fff; }
     .chip .cnt { background: var(--nc-badge); color: #fff; font-size: 11px; font-weight: 700; border-radius: 100px; padding: 0 6px; min-width: 18px; text-align: center; }
     .chip.active .cnt { background: rgba(255,255,255,.3); }
 
-    /* 聊天列表 —— 填滿剩餘高度、可捲動 */
-    .list { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-top: 6px; }
+    /* 列表 */
+    .list { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; touch-action: pan-y; padding-top: 6px; }
     .list::-webkit-scrollbar { width: 0; }
     .crow { display: flex; align-items: center; gap: 12px; padding: 9px 16px; cursor: pointer; position: relative; }
     .crow:active { background: rgba(0,0,0,0.04); }
@@ -93,20 +86,14 @@
     .cbadge { flex: 0 0 auto; background: var(--nc-badge); color: #fff; font-size: 12px; font-weight: 700; border-radius: 100px; min-width: 20px; height: 20px; padding: 0 6px; display: grid; place-items: center; }
     .cmute { color: var(--nc-text-2); flex: 0 0 auto; display: inline-flex; }
     .cmute svg { width: 16px; height: 16px; }
-
     .empty { display: none; text-align: center; color: var(--nc-text-2); padding: 64px 32px; }
     .empty svg { width: 46px; height: 46px; opacity: .4; margin-bottom: 12px; }
     .empty h3 { font-size: 16px; color: #3c3c43; margin-bottom: 4px; font-weight: 600; }
     .empty p { font-size: 14px; }
 
-    /* Tab Bar —— 固定底部（含安全區），浮動膠囊列 */
-    .tabbar { flex: 0 0 auto; display: flex; justify-content: center; padding: 8px 16px calc(8px + env(safe-area-inset-bottom, 0px)); }
-    .tabbar-inner {
-      width: 100%; height: 62px; background: var(--nc-bar-fill);
-      backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px);
-      border: 0.5px solid rgba(0,0,0,0.08); border-radius: 999px;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.10); display: flex; align-items: center; padding: 0 4px; position: relative;
-    }
+    /* Tab Bar — iOS 底部不過高：用 max() 不疊加 safe-area */
+    .tabbar { flex: 0 0 auto; display: flex; justify-content: center; padding: 8px 16px max(8px, env(safe-area-inset-bottom, 0px)); }
+    .tabbar-inner { width: 100%; height: 62px; background: var(--nc-bar-fill); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px); border: 0.5px solid rgba(0,0,0,0.08); border-radius: 999px; box-shadow: 0 6px 20px rgba(0,0,0,0.10); display: flex; align-items: center; padding: 0 4px; position: relative; touch-action: none; }
     .tab-lens { position: absolute; top: 5px; height: 52px; left: 0; width: 0; background: var(--nc-bar-active); border-radius: 999px; z-index: 0; pointer-events: none; transition: left .3s cubic-bezier(.34,1.2,.5,1), width .3s cubic-bezier(.34,1.2,.5,1); }
     .tab { flex: 1; z-index: 1; height: 52px; border: 0; background: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border-radius: 999px; color: #000; font-family: var(--sf); position: relative; }
     .tab .ico { width: 26px; height: 26px; display: grid; place-items: center; }
@@ -114,22 +101,23 @@
     .tab .lbl { font-size: 10px; line-height: 1; font-weight: 500; white-space: nowrap; }
     .tab.active { color: var(--nc-blue); }
 
-    /* 對話頁（滑入覆蓋整個 App）*/
-    .convo { position: absolute; inset: 0; z-index: 20; background: var(--nc-convo-bg); display: flex; flex-direction: column; transform: translateX(100%); transition: transform .28s cubic-bezier(.4,0,.2,1); visibility: hidden; }
+    /* 對話頁 */
+    .convo { position: absolute; inset: 0; z-index: 20; background: #fff; display: flex; flex-direction: column; transform: translateX(100%); transition: transform .28s cubic-bezier(.4,0,.2,1); visibility: hidden; }
     .convo.open { transform: translateX(0); visibility: visible; }
-    .convo-header { flex: 0 0 auto; display: flex; align-items: center; gap: 10px; padding: calc(env(safe-area-inset-top, 0px) + 12px) 12px 10px; border-bottom: 0.5px solid var(--nc-sep); background: rgba(255,255,255,.92); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+    .convo-header { flex: 0 0 auto; display: flex; align-items: center; gap: 10px; padding: calc(env(safe-area-inset-top, 0px) + 12px) 12px 10px; border-bottom: 0.5px solid var(--nc-sep); background: rgba(255,255,255,.92); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); z-index: 2; }
     .convo-back { border: 0; background: none; color: var(--nc-blue); cursor: pointer; display: grid; place-items: center; width: 32px; height: 32px; flex: 0 0 auto; }
     .convo-back svg { width: 24px; height: 24px; }
     .convo-av { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 600; font-size: 14px; flex: 0 0 auto; }
     .convo-title { min-width: 0; }
     .convo-name { font-size: 16px; font-weight: 600; color: #000; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .convo-sub { font-size: 12px; color: var(--nc-text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .convo-actions { margin-left: auto; display: flex; gap: 4px; flex: 0 0 auto; }
+    .convo-actions { margin-left: auto; display: flex; gap: 2px; flex: 0 0 auto; }
     .convo-actions button { border: 0; background: none; color: var(--nc-blue); cursor: pointer; width: 34px; height: 34px; display: grid; place-items: center; }
     .convo-actions svg { width: 22px; height: 22px; }
-    .msgs { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 14px 12px 8px; display: flex; flex-direction: column; gap: 3px; }
+    /* 訊息區（聊天背景套在這裡）*/
+    .msgs { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; touch-action: pan-y; padding: 14px 12px 8px; display: flex; flex-direction: column; gap: 3px; background: #fff; background-size: cover; background-position: center; }
     .msgs::-webkit-scrollbar { width: 0; }
-    .bubble { max-width: 76%; padding: 8px 13px; border-radius: 20px; font-size: 16px; line-height: 1.35; word-break: break-word; position: relative; }
+    .bubble { max-width: 76%; padding: 8px 13px; border-radius: 20px; font-size: 16px; line-height: 1.35; word-break: break-word; position: relative; box-shadow: 0 1px 1px rgba(0,0,0,0.06); }
     .bubble.them { align-self: flex-start; background: var(--nc-bubble-them); color: #000; border-bottom-left-radius: 6px; }
     .bubble.me { align-self: flex-end; background: var(--nc-bubble-me); color: #fff; border-bottom-right-radius: 6px; }
     .bubble .who { font-size: 12px; font-weight: 600; color: var(--nc-blue); margin-bottom: 2px; }
@@ -144,14 +132,29 @@
     .composer .send:disabled { opacity: .35; }
     .composer .send svg { width: 20px; height: 20px; }
 
-    .toast { position: absolute; left: 50%; bottom: calc(96px + env(safe-area-inset-bottom)); transform: translate(-50%, 10px); opacity: 0; pointer-events: none; z-index: 40; background: rgba(0,0,0,.82); color: #fff; padding: 9px 16px; border-radius: 100px; font-size: 13px; transition: opacity .2s, transform .2s; white-space: nowrap; }
+    /* 聊天背景選擇器（底部彈出）*/
+    .bgsheet { position: absolute; inset: 0; z-index: 30; display: none; }
+    .bgsheet.open { display: block; }
+    .bgsheet .mask { position: absolute; inset: 0; background: rgba(0,0,0,.35); opacity: 0; transition: opacity .25s; }
+    .bgsheet.open .mask { opacity: 1; }
+    .bgsheet .panel { position: absolute; left: 0; right: 0; bottom: 0; background: #fff; border-radius: 20px 20px 0 0; padding: 14px 16px calc(18px + env(safe-area-inset-bottom)); transform: translateY(100%); transition: transform .28s cubic-bezier(.4,0,.2,1); }
+    .bgsheet.open .panel { transform: translateY(0); }
+    .bgsheet .ph { display: flex; align-items: center; margin-bottom: 14px; }
+    .bgsheet .ph b { font-size: 17px; }
+    .bgsheet .ph button { margin-left: auto; border: 0; background: none; color: var(--nc-blue); font-size: 16px; font-weight: 600; cursor: pointer; font-family: var(--sf); }
+    .bggrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .bgopt { aspect-ratio: 9/16; border-radius: 12px; border: 2.5px solid transparent; cursor: pointer; background-size: cover; background-position: center; }
+    .bgopt.sel { border-color: var(--nc-blue); }
+    .bgopt.upload { display: grid; place-items: center; background: var(--nc-fill-secondary); color: var(--nc-label-secondary); }
+    .bgopt.upload svg { width: 24px; height: 24px; }
+
+    .toast { position: absolute; left: 50%; bottom: calc(100px + env(safe-area-inset-bottom)); transform: translate(-50%, 10px); opacity: 0; pointer-events: none; z-index: 40; background: rgba(0,0,0,.82); color: #fff; padding: 9px 16px; border-radius: 100px; font-size: 13px; transition: opacity .2s, transform .2s; white-space: nowrap; }
     .toast.show { opacity: 1; transform: translate(-50%, 0); }
   </style>
 </head>
 <body>
   <main class="app" id="app" role="application" aria-label="NovaCHAT 聊天">
 
-    <!-- 頂部：搜尋 / 聊天 / 分類 -->
     <div class="topbar">
       <div class="search" role="search">
         <span class="mag" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></span>
@@ -166,7 +169,6 @@
       </nav>
     </div>
 
-    <!-- 聊天列表 -->
     <section class="list" id="list" aria-label="聊天列表"></section>
     <div class="empty" id="empty">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -174,7 +176,6 @@
       <p id="emptyDesc">開始一段新的對話吧</p>
     </div>
 
-    <!-- Tab Bar -->
     <nav class="tabbar" aria-label="主導覽">
       <div class="tabbar-inner" id="tabbar">
         <span class="tab-lens" id="tabLens" aria-hidden="true"></span>
@@ -186,13 +187,13 @@
       </div>
     </nav>
 
-    <!-- 對話頁 -->
     <section class="convo" id="convo" aria-label="對話" aria-hidden="true">
       <header class="convo-header">
         <button class="convo-back" id="convoBack" aria-label="返回"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
         <span class="convo-av" id="convoAv"></span>
         <span class="convo-title"><span class="convo-name" id="convoName"></span><span class="convo-sub" id="convoSub"></span></span>
         <span class="convo-actions">
+          <button aria-label="聊天背景" data-act="bg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.8"/><path d="M21 15l-5-5L5 21"/></svg></button>
           <button aria-label="語音通話" data-act="voice"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.6A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.4-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg></button>
           <button aria-label="視訊通話" data-act="video"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></button>
         </span>
@@ -205,32 +206,39 @@
       </form>
     </section>
 
+    <!-- 聊天背景選擇器 -->
+    <div class="bgsheet" id="bgsheet" aria-hidden="true">
+      <div class="mask" id="bgmask"></div>
+      <div class="panel">
+        <div class="ph"><b>聊天背景</b><button id="bgdone">完成</button></div>
+        <div class="bggrid" id="bggrid"></div>
+      </div>
+    </div>
+    <input id="bgfile" type="file" accept="image/*" hidden>
+
     <div class="toast" id="toast"></div>
   </main>
 
   <script>
-  /* NovaCHAT — 資料層 Store（本地範例 SEED；之後換成 fetch('/api/...')，非偽造後端）*/
-  const SEED = {
-    me: 'me',
-    chats: [
-      { id:'c1', type:'dm', name:'林子晴', color:'#ff7a59', online:true, muted:false, time:'剛剛', unread:2,
-        msgs:[ {from:'林子晴',text:'在嗎？週末有空嗎',t:'14:02'},{from:'林子晴',text:'那我們約週六下午見！',t:'14:05'} ] },
-      { id:'g1', type:'group', name:'設計小組', color:'#5b6cff', members:6, muted:false, time:'09:12', unread:5,
-        msgs:[ {from:'阿哲',text:'新版 Logo 已上傳',t:'09:10'},{from:'阿哲',text:'大家看看配色',t:'09:12'} ] },
-      { id:'c2', type:'dm', name:'Kevin', color:'#37b6d6', online:false, muted:false, time:'08:40', unread:0,
-        msgs:[ {from:'me',text:'檔案收到了嗎？',t:'08:38',status:'read'},{from:'Kevin',text:'收到，謝謝！',t:'08:39'},{from:'me',text:'👍',t:'08:40',status:'read'} ] },
-      { id:'g2', type:'group', name:'家庭群組', color:'#34c759', members:4, muted:true, time:'昨天', unread:0,
-        msgs:[ {from:'媽',text:'晚餐吃火鍋喔',t:'昨天 18:20'} ] },
-      { id:'c3', type:'dm', name:'陳柏宇', color:'#a06bff', online:true, muted:false, time:'昨天', unread:0,
-        msgs:[ {from:'me',text:'你傳的檔案我下載好了',t:'昨天 21:11',status:'delivered'} ] },
-      { id:'c4', type:'dm', name:'Amy', color:'#ff2d87', online:false, muted:false, time:'週一', unread:0,
-        msgs:[ {from:'Amy',text:'哈哈哈哈太好笑了',t:'週一 12:30'} ] },
-      { id:'g3', type:'group', name:'週末登山團', color:'#ff9f0a', members:12, muted:false, time:'週一', unread:1,
-        msgs:[ {from:'隊長',text:'天氣預報下雨，改期？',t:'週一 20:01'} ] },
-      { id:'c5', type:'dm', name:'王美玲', color:'#8e8e93', online:false, muted:false, time:'11/3', unread:0,
-        msgs:[ {from:'me',text:'好的沒問題',t:'11/3',status:'read'} ] },
-    ],
-  };
+  /* 資料層 Store（本地範例；之後換 fetch('/api/...')）*/
+  const SEED = { me:'me', chats:[
+    { id:'c1', type:'dm', name:'林子晴', color:'#ff7a59', online:true, muted:false, time:'剛剛', unread:2,
+      msgs:[ {from:'林子晴',text:'在嗎？週末有空嗎',t:'14:02'},{from:'林子晴',text:'那我們約週六下午見！',t:'14:05'} ] },
+    { id:'g1', type:'group', name:'設計小組', color:'#5b6cff', members:6, muted:false, time:'09:12', unread:5,
+      msgs:[ {from:'阿哲',text:'新版 Logo 已上傳',t:'09:10'},{from:'阿哲',text:'大家看看配色',t:'09:12'} ] },
+    { id:'c2', type:'dm', name:'Kevin', color:'#37b6d6', online:false, muted:false, time:'08:40', unread:0,
+      msgs:[ {from:'me',text:'檔案收到了嗎？',t:'08:38',status:'read'},{from:'Kevin',text:'收到，謝謝！',t:'08:39'},{from:'me',text:'👍',t:'08:40',status:'read'} ] },
+    { id:'g2', type:'group', name:'家庭群組', color:'#34c759', members:4, muted:true, time:'昨天', unread:0,
+      msgs:[ {from:'媽',text:'晚餐吃火鍋喔',t:'昨天 18:20'} ] },
+    { id:'c3', type:'dm', name:'陳柏宇', color:'#a06bff', online:true, muted:false, time:'昨天', unread:0,
+      msgs:[ {from:'me',text:'你傳的檔案我下載好了',t:'昨天 21:11',status:'delivered'} ] },
+    { id:'c4', type:'dm', name:'Amy', color:'#ff2d87', online:false, muted:false, time:'週一', unread:0,
+      msgs:[ {from:'Amy',text:'哈哈哈哈太好笑了',t:'週一 12:30'} ] },
+    { id:'g3', type:'group', name:'週末登山團', color:'#ff9f0a', members:12, muted:false, time:'週一', unread:1,
+      msgs:[ {from:'隊長',text:'天氣預報下雨，改期？',t:'週一 20:01'} ] },
+    { id:'c5', type:'dm', name:'王美玲', color:'#8e8e93', online:false, muted:false, time:'11/3', unread:0,
+      msgs:[ {from:'me',text:'好的沒問題',t:'11/3',status:'read'} ] },
+  ] };
   const Store = {
     _c: [],
     async fetchChats(){ this._c = SEED.chats.map(c => ({...c, msgs:[...c.msgs]})); return this._c; },
@@ -305,14 +313,66 @@
   }
   function closeConvo(){ const co=$('#convo'); co.classList.remove('open'); co.setAttribute('aria-hidden','true'); State.openId=null; renderList(); }
 
+  /* ---- 聊天背景 ---- */
+  const BG_PRESETS = [
+    { id:'default', css:'#ffffff' },
+    { id:'paper',   css:'#f3efe7' },
+    { id:'warm',    css:'linear-gradient(160deg,#ffe3d3,#ffd0e0)' },
+    { id:'cool',    css:'linear-gradient(160deg,#d6ecff,#e7d6ff)' },
+    { id:'mint',    css:'linear-gradient(160deg,#d6fff0,#d6f0ff)' },
+    { id:'sky',     css:'linear-gradient(160deg,#a1c4fd,#c2e9fb)' },
+    { id:'dusk',    css:'linear-gradient(160deg,#2b2d42,#4a4e69)' },
+  ];
+  function getBg(){ try{ return JSON.parse(localStorage.getItem('nc.chatbg')||'null'); }catch{ return null; } }
+  function applyBg(bg){
+    const m=$('#msgs');
+    if(!bg || (bg.type==='preset' && bg.value==='#ffffff')){ m.style.backgroundImage='none'; m.style.background='#fff'; return; }
+    if(bg.type==='photo'){ m.style.background='#000'; m.style.backgroundImage=`url("${bg.value}")`; }
+    else { m.style.backgroundImage='none'; m.style.background=bg.value; }
+  }
+  function saveBg(bg){ try{ localStorage.setItem('nc.chatbg', JSON.stringify(bg)); }catch(e){ toast('照片太大無法儲存'); } applyBg(bg); }
+  function renderBgGrid(){
+    const cur=getBg(); const grid=$('#bggrid');
+    let html = BG_PRESETS.map(p=>{
+      const sel = cur ? (cur.type==='preset' && cur.value===p.css) : (p.id==='default');
+      return `<button class="bgopt ${sel?'sel':''}" data-css="${p.css}" style="background:${p.css}"></button>`;
+    }).join('');
+    if(cur && cur.type==='photo') html += `<button class="bgopt sel" data-photo="1" style="background-image:url('${cur.value}')"></button>`;
+    html += `<button class="bgopt upload" id="bgupload" aria-label="用自己的照片"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.8"/><path d="M21 15l-5-5L5 21"/></svg></button>`;
+    grid.innerHTML=html;
+  }
+  function openBgSheet(){ renderBgGrid(); const s=$('#bgsheet'); s.classList.add('open'); s.setAttribute('aria-hidden','false'); }
+  function closeBgSheet(){ const s=$('#bgsheet'); s.classList.remove('open'); s.setAttribute('aria-hidden','true'); }
+  function downscale(dataUrl, cb){
+    const img=new Image();
+    img.onload=()=>{ const max=1280; let w=img.width,h=img.height; const s=Math.min(1,max/Math.max(w,h));
+      const cw=Math.round(w*s), ch=Math.round(h*s); const cv=document.createElement('canvas'); cv.width=cw; cv.height=ch;
+      cv.getContext('2d').drawImage(img,0,0,cw,ch); try{ cb(cv.toDataURL('image/jpeg',0.82)); }catch{ cb(dataUrl); } };
+    img.onerror=()=>cb(dataUrl); img.src=dataUrl;
+  }
+
   function bind(){
     const inp=$('#searchInput');
     inp.addEventListener('input',()=>{ State.query=inp.value; renderList(); });
     $('#chips').addEventListener('click',(e)=>{ const ch=e.target.closest('.chip'); if(!ch) return; State.filter=ch.dataset.filter; document.querySelectorAll('.chip').forEach(x=>x.classList.toggle('active',x===ch)); renderList(); });
     $('#list').addEventListener('click',(e)=>{ const r=e.target.closest('.crow'); if(!r) return; openConvo(r.dataset.id); });
     $('#convoBack').addEventListener('click',closeConvo);
-    document.querySelectorAll('.convo-actions button').forEach(b=>b.addEventListener('click',()=>toast(b.dataset.act==='voice'?'語音通話（下一階段）':'視訊通話（下一階段）')));
+    document.querySelectorAll('.convo-actions button').forEach(b=>b.addEventListener('click',()=>{
+      const a=b.dataset.act;
+      if(a==='bg'){ openBgSheet(); return; }
+      toast(a==='voice'?'語音通話（下一階段）':'視訊通話（下一階段）');
+    }));
 
+    // 背景選擇器事件
+    $('#bggrid').addEventListener('click',(e)=>{ const o=e.target.closest('.bgopt'); if(!o) return;
+      if(o.id==='bgupload' || o.closest('#bgupload')){ $('#bgfile').click(); return; }
+      if(o.dataset.css){ saveBg({type:'preset', value:o.dataset.css}); renderBgGrid(); } });
+    $('#bgfile').addEventListener('change',(e)=>{ const f=e.target.files&&e.target.files[0]; if(!f) return;
+      const r=new FileReader(); r.onload=()=>downscale(r.result,(small)=>{ saveBg({type:'photo', value:small}); renderBgGrid(); }); r.readAsDataURL(f); e.target.value=''; });
+    $('#bgmask').addEventListener('click',closeBgSheet);
+    $('#bgdone').addEventListener('click',closeBgSheet);
+
+    // 送訊息
     const ta=$('#msgInput'), send=$('#sendBtn');
     const refresh=()=>{ send.disabled=ta.value.trim()===''; ta.style.height='auto'; ta.style.height=Math.min(ta.scrollHeight,90)+'px'; };
     ta.addEventListener('input',refresh);
@@ -325,18 +385,37 @@
     });
     $('.composer .plus').addEventListener('click',()=>toast('附件 / 圖片（下一階段）'));
 
+    // Tab Bar：膠囊可點、可左右拖動
     const tabbar=$('#tabbar'), lens=$('#tabLens');
-    const moveLens=(t)=>{ if(!t) return; lens.style.left=t.offsetLeft+'px'; lens.style.width=t.offsetWidth+'px'; };
-    tabbar.addEventListener('click',(e)=>{ const t=e.target.closest('.tab'); if(!t) return;
-      document.querySelectorAll('.tab').forEach(x=>{ const on=x===t; x.classList.toggle('active',on); on?x.setAttribute('aria-current','page'):x.removeAttribute('aria-current'); });
-      moveLens(t); if(t.dataset.tab!=='chat') toast(t.querySelector('.lbl').textContent+'（下一階段）'); });
+    const tabs=()=>[...tabbar.querySelectorAll('.tab')];
+    const moveLens=(t)=>{ if(!t) return; lens.style.transition=''; lens.style.left=t.offsetLeft+'px'; lens.style.width=t.offsetWidth+'px'; };
+    function selectTab(t, silent){ if(!t) return;
+      tabs().forEach(x=>{ const on=x===t; x.classList.toggle('active',on); on?x.setAttribute('aria-current','page'):x.removeAttribute('aria-current'); });
+      moveLens(t); if(!silent && t.dataset.tab!=='chat') toast(t.querySelector('.lbl').textContent+'（下一階段）'); }
+    const tabAtX=(clientX)=>{ const r=tabbar.getBoundingClientRect(); const x=clientX-r.left;
+      let best=tabs()[0], bd=Infinity; tabs().forEach(t=>{ const c=t.offsetLeft+t.offsetWidth/2; const d=Math.abs(c-x); if(d<bd){bd=d;best=t;} }); return best; };
+    let dragging=false, moved=false;
+    tabbar.addEventListener('pointerdown',(e)=>{ if(!e.target.closest('.tab')) return; dragging=true; moved=false; try{ tabbar.setPointerCapture(e.pointerId); }catch{} });
+    tabbar.addEventListener('pointermove',(e)=>{ if(!dragging) return; moved=true;
+      const r=tabbar.getBoundingClientRect(); const w=lens.offsetWidth||tabs()[0].offsetWidth;
+      let left=e.clientX-r.left-w/2; left=Math.max(4, Math.min(left, tabbar.clientWidth-w-4));
+      lens.style.transition='none'; lens.style.left=left+'px'; });
+    const endDrag=(e)=>{ if(!dragging) return; dragging=false; selectTab(tabAtX(e.clientX), false); };
+    tabbar.addEventListener('pointerup',endDrag);
+    tabbar.addEventListener('pointercancel',()=>{ dragging=false; selectTab(document.querySelector('.tab.active'), true); });
+    tabbar.addEventListener('click',(e)=>{ if(moved){ e.preventDefault(); e.stopPropagation(); moved=false; return; } const t=e.target.closest('.tab'); if(t) selectTab(t,false); });
     const relocate=()=>moveLens(document.querySelector('.tab.active'));
     requestAnimationFrame(relocate); window.addEventListener('resize',relocate);
     if(document.fonts&&document.fonts.ready) document.fonts.ready.then(relocate);
   }
   function toast(m){ const t=$('#toast'); t.textContent=m; t.classList.add('show'); clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove('show'),1600); }
 
-  (async function init(){ bind(); await Store.fetchChats(); renderList();
+  // 阻擋 iOS Safari 的雙指/雙擊放大（user-scalable=no 在 Safari 不完全生效）
+  document.addEventListener('gesturestart', (e)=>e.preventDefault());
+  let lastTouch=0;
+  document.addEventListener('touchend',(e)=>{ const now=Date.now(); if(now-lastTouch<=300) e.preventDefault(); lastTouch=now; }, {passive:false});
+
+  (async function init(){ bind(); applyBg(getBg()); await Store.fetchChats(); renderList();
     if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{}); })();
   </script>
 </body>
