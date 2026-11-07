@@ -43,7 +43,9 @@
     input, textarea { -webkit-user-select: text; user-select: text; }
 
     .app {
-      position: relative; width: 100%; height: 100vh; height: 100dvh;  /* 可見視窗高度 */
+      /* 照 Group：用 100vh（iOS 固定為工具列收起時的最大高度，不像 dvh 會動），
+         畫面永遠 ≥ 可見範圍 → 底部不會「有時多一塊」；底欄是 fixed 永遠貼可見底部 */
+      position: relative; width: 100%; height: 100vh;
       background: #fff; overflow: hidden; display: flex; flex-direction: column;
     }
 
