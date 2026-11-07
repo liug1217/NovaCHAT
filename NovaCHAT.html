@@ -210,8 +210,8 @@
       <nav class="tabbar" aria-label="主導覽">
         <div class="tabbar-inner" id="tabbar">
           <span class="tab-lens" id="tabLens" aria-hidden="true"></span>
-          <button class="tab active" data-tab="t1" aria-current="page"><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 2.5l9.5 9.5L12 21.5 2.5 12 12 2.5z"/></svg></span><span class="lbl">Tab 1</span></button>
-          <button class="tab" data-tab="chat"><span class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/></svg></span><span class="lbl">聊天</span></button>
+          <button class="tab" data-tab="home"><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 2.5l9.5 9.5L12 21.5 2.5 12 12 2.5z"/></svg></span><span class="lbl">主頁</span></button>
+          <button class="tab active" data-tab="chat" aria-current="page"><span class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/></svg></span><span class="lbl">聊天</span></button>
           <button class="tab" data-tab="video"><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 3l9.5 16.5H2.5L12 3z"/></svg></span><span class="lbl">VIDEO</span></button>
           <button class="tab" data-tab="seal"><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 2c1 0 1.9.6 2.3 1.5.9-.5 2-.4 2.8.3.8.7 1 1.8.6 2.7.9.3 1.5 1.2 1.5 2.2s-.6 1.9-1.5 2.2c.4.9.2 2-.6 2.7-.8.7-1.9.8-2.8.3-.4.9-1.3 1.5-2.3 1.5s-1.9-.6-2.3-1.5c-.9.5-2 .4-2.8-.3-.8-.7-1-1.8-.6-2.7C3.6 13.9 3 13 3 12s.6-1.9 1.5-2.2c-.4-.9-.2-2 .6-2.7.8-.7 1.9-.8 2.8-.3C10.1 2.6 11 2 12 2z"/></svg></span><span class="lbl">❌</span></button>
           <button class="tab" data-tab="me"><span class="ico"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/></svg></span><span class="lbl">我的</span></button>
@@ -382,7 +382,7 @@
     const moveLens=(t)=>{ if(!t) return; lens.style.left=t.offsetLeft+'px'; lens.style.width=t.offsetWidth+'px'; };
     tabbar.addEventListener('click',(e)=>{ const t=e.target.closest('.tab'); if(!t) return;
       document.querySelectorAll('.tab').forEach(x=>{ const on=x===t; x.classList.toggle('active',on); on?x.setAttribute('aria-current','page'):x.removeAttribute('aria-current'); });
-      moveLens(t); if(t.dataset.tab!=='t1'&&t.dataset.tab!=='chat') toast('此頁面尚待設計確認'); });
+      moveLens(t); if(t.dataset.tab!=='chat') toast(t.querySelector('.lbl').textContent+'（下一階段）'); });
     const relocate=()=>moveLens(document.querySelector('.tab.active'));
     requestAnimationFrame(relocate); window.addEventListener('resize',relocate);
     if(document.fonts&&document.fonts.ready) document.fonts.ready.then(relocate);
