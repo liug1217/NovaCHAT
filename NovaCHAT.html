@@ -105,7 +105,8 @@
     .tab.active { color: var(--nc-blue); }
 
     /* 對話頁 */
-    .convo { position: absolute; inset: 0; z-index: 20; background: #fff; display: flex; flex-direction: column; transform: translateX(100%); transition: transform .28s cubic-bezier(.4,0,.2,1); visibility: hidden; }
+    /* 背景套在固定大小的對話容器上（不是會捲動的 .msgs），避免照片被放大 */
+    .convo { position: absolute; inset: 0; z-index: 20; background: #fff; background-size: cover; background-position: center; background-repeat: no-repeat; display: flex; flex-direction: column; transform: translateX(100%); transition: transform .28s cubic-bezier(.4,0,.2,1); visibility: hidden; }
     .convo.open { transform: translateX(0); visibility: visible; }
     .convo-header { flex: 0 0 auto; display: flex; align-items: center; gap: 10px; padding: calc(env(safe-area-inset-top, 0px) + 12px) 12px 10px; border-bottom: 0.5px solid var(--nc-sep); background: rgba(255,255,255,.92); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); z-index: 2; }
     .convo-back { border: 0; background: none; color: var(--nc-blue); cursor: pointer; display: grid; place-items: center; width: 32px; height: 32px; flex: 0 0 auto; }
@@ -118,7 +119,7 @@
     .convo-actions button { border: 0; background: none; color: var(--nc-blue); cursor: pointer; width: 34px; height: 34px; display: grid; place-items: center; }
     .convo-actions svg { width: 22px; height: 22px; }
     /* 訊息區（聊天背景套在這裡）*/
-    .msgs { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; touch-action: pan-y; padding: 14px 12px 8px; display: flex; flex-direction: column; gap: 3px; background: #fff; background-size: cover; background-position: center; }
+    .msgs { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; touch-action: pan-y; padding: 14px 12px 8px; display: flex; flex-direction: column; gap: 3px; background: transparent; }
     .msgs::-webkit-scrollbar { width: 0; }
     .bubble { max-width: 76%; padding: 8px 13px; border-radius: 20px; font-size: 16px; line-height: 1.35; word-break: break-word; position: relative; box-shadow: 0 1px 1px rgba(0,0,0,0.06); }
     .bubble.them { align-self: flex-start; background: var(--nc-bubble-them); color: #000; border-bottom-left-radius: 6px; }
@@ -225,22 +226,22 @@
   <script>
   /* 資料層 Store（本地範例；之後換 fetch('/api/...')）*/
   const SEED = { me:'me', chats:[
-    { id:'c1', type:'dm', name:'林子晴', color:'#ff7a59', online:true, muted:false, time:'剛剛', unread:2,
-      msgs:[ {from:'林子晴',text:'在嗎？週末有空嗎',t:'14:02'},{from:'林子晴',text:'那我們約週六下午見！',t:'14:05'} ] },
-    { id:'g1', type:'group', name:'設計小組', color:'#5b6cff', members:6, muted:false, time:'09:12', unread:5,
-      msgs:[ {from:'阿哲',text:'新版 Logo 已上傳',t:'09:10'},{from:'阿哲',text:'大家看看配色',t:'09:12'} ] },
-    { id:'c2', type:'dm', name:'Kevin', color:'#37b6d6', online:false, muted:false, time:'08:40', unread:0,
-      msgs:[ {from:'me',text:'檔案收到了嗎？',t:'08:38',status:'read'},{from:'Kevin',text:'收到，謝謝！',t:'08:39'},{from:'me',text:'👍',t:'08:40',status:'read'} ] },
+    { id:'c1', type:'dm', name:'林子晴', color:'#ff7a59', online:true, muted:false, time:'下午 2:05', unread:2,
+      msgs:[ {from:'林子晴',text:'在嗎？週末有空嗎',t:'今天 下午 2:02'},{from:'林子晴',text:'那我們約週六下午見！',t:'今天 下午 2:05'} ] },
+    { id:'g1', type:'group', name:'設計小組', color:'#5b6cff', members:6, muted:false, time:'早上 9:12', unread:5,
+      msgs:[ {from:'阿哲',text:'新版 Logo 已上傳',t:'今天 早上 9:10'},{from:'阿哲',text:'大家看看配色',t:'今天 早上 9:12'} ] },
+    { id:'c2', type:'dm', name:'Kevin', color:'#37b6d6', online:false, muted:false, time:'早上 8:40', unread:0,
+      msgs:[ {from:'me',text:'檔案收到了嗎？',t:'今天 早上 8:38',status:'read'},{from:'Kevin',text:'收到，謝謝！',t:'今天 早上 8:39'},{from:'me',text:'👍',t:'今天 早上 8:40',status:'read'} ] },
     { id:'g2', type:'group', name:'家庭群組', color:'#34c759', members:4, muted:true, time:'昨天', unread:0,
-      msgs:[ {from:'媽',text:'晚餐吃火鍋喔',t:'昨天 18:20'} ] },
+      msgs:[ {from:'媽',text:'晚餐吃火鍋喔',t:'昨天 晚上 6:20'} ] },
     { id:'c3', type:'dm', name:'陳柏宇', color:'#a06bff', online:true, muted:false, time:'昨天', unread:0,
-      msgs:[ {from:'me',text:'你傳的檔案我下載好了',t:'昨天 21:11',status:'delivered'} ] },
+      msgs:[ {from:'me',text:'你傳的檔案我下載好了',t:'昨天 晚上 9:11',status:'delivered'} ] },
     { id:'c4', type:'dm', name:'Amy', color:'#ff2d87', online:false, muted:false, time:'週一', unread:0,
-      msgs:[ {from:'Amy',text:'哈哈哈哈太好笑了',t:'週一 12:30'} ] },
+      msgs:[ {from:'Amy',text:'哈哈哈哈太好笑了',t:'週一 中午 12:30'} ] },
     { id:'g3', type:'group', name:'週末登山團', color:'#ff9f0a', members:12, muted:false, time:'週一', unread:1,
-      msgs:[ {from:'隊長',text:'天氣預報下雨，改期？',t:'週一 20:01'} ] },
+      msgs:[ {from:'隊長',text:'天氣預報下雨，改期？',t:'週一 晚上 8:01'} ] },
     { id:'c5', type:'dm', name:'王美玲', color:'#8e8e93', online:false, muted:false, time:'11/3', unread:0,
-      msgs:[ {from:'me',text:'好的沒問題',t:'11/3',status:'read'} ] },
+      msgs:[ {from:'me',text:'好的沒問題',t:'11/3 下午 3:00',status:'read'} ] },
   ] };
   const Store = {
     _c: [],
@@ -248,9 +249,8 @@
     all(){ return this._c; },
     get(id){ return this._c.find(c => c.id === id); },
     unreadTotal(){ return this._c.reduce((n,c)=>n+(c.unread||0),0); },
-    send(id, text){ const c=this.get(id); if(!c) return;
-      const t=new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit',hour12:false});
-      c.msgs.push({ from:'me', text, t, status:'delivered' }); c.time=t; c.unread=0; },
+    send(id, text){ const c=this.get(id); if(!c) return; const now=new Date();
+      c.msgs.push({ from:'me', text, t:fmtWhen(now), status:'delivered' }); c.time=fmtTime(now); c.unread=0; },
     markRead(id){ const c=this.get(id); if(c) c.unread=0; },
   };
 
@@ -258,6 +258,15 @@
   const $ = (s)=>document.querySelector(s);
   const esc = (s)=>String(s).replace(/[&<>"]/g,(m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
   const initials = (n)=>{ n=n.trim(); return /[一-鿿]/.test(n)?n.slice(-2):n.split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase(); };
+  // 時間：日期(今天/昨天/前天/週X/M/D) + 時段(凌晨/清晨/早上/中午/下午/晚上) + 幾點幾分
+  function periodOfDay(h){ return h<5?'凌晨':h<8?'清晨':h<11?'早上':h<13?'中午':h<18?'下午':'晚上'; }
+  function hm12(h,m){ return (h%12||12)+':'+String(m).padStart(2,'0'); }
+  function fmtTime(d){ return periodOfDay(d.getHours())+' '+hm12(d.getHours(),d.getMinutes()); }
+  function dayLabel(d){ const key=(a)=>a.getFullYear()*372+a.getMonth()*31+a.getDate(); const diff=key(new Date())-key(d);
+    if(diff<=0) return '今天'; if(diff===1) return '昨天'; if(diff===2) return '前天';
+    if(diff<7) return ['週日','週一','週二','週三','週四','週五','週六'][d.getDay()];
+    return (d.getMonth()+1)+'/'+d.getDate(); }
+  function fmtWhen(d){ return dayLabel(d)+' '+fmtTime(d); }
   const ICON = {
     tick1:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>',
     tick2:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12l5 5 9-11"/><path d="M11 17l1.4-1.7M22 6l-6 7.3"/></svg>',
@@ -328,10 +337,10 @@
   ];
   function getBg(){ try{ return JSON.parse(localStorage.getItem('nc.chatbg')||'null'); }catch{ return null; } }
   function applyBg(bg){
-    const m=$('#msgs');
-    if(!bg || (bg.type==='preset' && bg.value==='#ffffff')){ m.style.backgroundImage='none'; m.style.background='#fff'; return; }
-    if(bg.type==='photo'){ m.style.background='#000'; m.style.backgroundImage=`url("${bg.value}")`; }
-    else { m.style.backgroundImage='none'; m.style.background=bg.value; }
+    const el=$('#convo');   // 背景套在固定大小的對話容器，不隨訊息捲動放大
+    if(!bg || (bg.type==='preset' && bg.value==='#ffffff')){ el.style.backgroundImage='none'; el.style.backgroundColor='#fff'; return; }
+    if(bg.type==='photo'){ el.style.backgroundColor='#000'; el.style.backgroundImage=`url("${bg.value}")`; }
+    else { el.style.backgroundImage='none'; el.style.background=bg.value; }
   }
   function saveBg(bg){ try{ localStorage.setItem('nc.chatbg', JSON.stringify(bg)); }catch(e){ toast('照片太大無法儲存'); } applyBg(bg); }
   function renderBgGrid(){
