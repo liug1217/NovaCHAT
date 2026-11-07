@@ -25,7 +25,7 @@
       --nc-chip: rgba(120,120,128,0.12);
       --nc-badge: #ff3b30;
       --nc-online: #34c759;
-      --nc-bubble-me: #007aff;
+      --nc-bubble-me: #1abc9c;   /* 訊息氣泡：青綠色 */
       --nc-bubble-them: #e9e9eb;
       --sf: -apple-system, "SF Pro Text", "SF Pro", system-ui, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
       --inter: "Inter", -apple-system, system-ui, "Noto Sans TC", sans-serif;
@@ -111,14 +111,14 @@
     .convo { position: absolute; inset: 0; z-index: 20; background: #fff; background-size: cover; background-position: center; background-repeat: no-repeat; display: flex; flex-direction: column; transform: translateX(100%); transition: transform .28s cubic-bezier(.4,0,.2,1); visibility: hidden; }
     .convo.open { transform: translateX(0); visibility: visible; }
     .convo-header { flex: 0 0 auto; display: flex; align-items: center; gap: 10px; padding: calc(env(safe-area-inset-top, 0px) + 12px) 12px 10px; border-bottom: 0.5px solid var(--nc-sep); background: rgba(255,255,255,.92); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); z-index: 2; }
-    .convo-back { border: 0; background: none; color: var(--nc-blue); cursor: pointer; display: grid; place-items: center; width: 32px; height: 32px; flex: 0 0 auto; }
+    .convo-back { border: 0; background: none; color: #000; cursor: pointer; display: grid; place-items: center; width: 32px; height: 32px; flex: 0 0 auto; }
     .convo-back svg { width: 24px; height: 24px; }
     .convo-av { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 600; font-size: 14px; flex: 0 0 auto; }
     .convo-title { min-width: 0; }
     .convo-name { font-size: 16px; font-weight: 600; color: #000; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .convo-sub { font-size: 12px; color: var(--nc-text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .convo-actions { margin-left: auto; display: flex; gap: 2px; flex: 0 0 auto; }
-    .convo-actions button { border: 0; background: none; color: var(--nc-blue); cursor: pointer; width: 34px; height: 34px; display: grid; place-items: center; }
+    .convo-actions button { border: 0; background: none; color: #000; cursor: pointer; width: 34px; height: 34px; display: grid; place-items: center; }
     .convo-actions svg { width: 22px; height: 22px; }
     /* 訊息區（聊天背景套在這裡）*/
     .msgs { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; touch-action: pan-y; padding: 14px 12px 8px; display: flex; flex-direction: column; gap: 3px; background: transparent; }
@@ -130,11 +130,11 @@
     .bubble .mt { font-size: 10px; opacity: .6; margin-left: 8px; float: right; margin-top: 6px; }
     .bubble.me .mt { color: #fff; }
     .composer { flex: 0 0 auto; display: flex; align-items: flex-end; gap: 8px; padding: 8px 12px calc(10px + env(safe-area-inset-bottom)); border-top: 0.5px solid var(--nc-sep); background: #fff; }
-    .composer .plus { border: 0; background: none; color: var(--nc-blue); cursor: pointer; width: 34px; height: 34px; flex: 0 0 auto; display: grid; place-items: center; }
+    .composer .plus { border: 0; background: none; color: #000; cursor: pointer; width: 34px; height: 34px; flex: 0 0 auto; display: grid; place-items: center; }
     .composer .plus svg { width: 26px; height: 26px; }
     .composer .field { flex: 1; min-width: 0; display: flex; align-items: center; background: var(--nc-fill-secondary); border-radius: 20px; padding: 7px 14px; }
     .composer textarea { flex: 1; border: 0; background: none; outline: none; resize: none; font-family: var(--sf); font-size: 16px; max-height: 90px; line-height: 1.3; color: #000; }
-    .composer .send { border: 0; background: var(--nc-blue); color: #fff; cursor: pointer; width: 34px; height: 34px; border-radius: 50%; flex: 0 0 auto; display: grid; place-items: center; transition: transform .1s, opacity .15s; }
+    .composer .send { border: 0; background: #000; color: #fff; cursor: pointer; width: 34px; height: 34px; border-radius: 50%; flex: 0 0 auto; display: grid; place-items: center; transition: transform .1s, opacity .15s; }
     .composer .send:disabled { opacity: .35; }
     .composer .send svg { width: 20px; height: 20px; }
 
@@ -339,10 +339,16 @@
   ];
   function getBg(){ try{ return JSON.parse(localStorage.getItem('nc.chatbg')||'null'); }catch{ return null; } }
   function applyBg(bg){
-    const el=$('#convo');   // 背景套在固定大小的對話容器，不隨訊息捲動放大
-    if(!bg || (bg.type==='preset' && bg.value==='#ffffff')){ el.style.backgroundImage='none'; el.style.backgroundColor='#fff'; return; }
-    if(bg.type==='photo'){ el.style.backgroundColor='#000'; el.style.backgroundImage=`url("${bg.value}")`; }
-    else { el.style.backgroundImage='none'; el.style.background=bg.value; }
+    const el=$('#convo');   // 背景套在固定大小的對話容器
+    if(!bg || (bg.type==='preset' && bg.value==='#ffffff')){ el.style.background=''; el.style.backgroundImage='none'; el.style.backgroundColor='#fff'; return; }
+    if(bg.type==='photo'){
+      // 一定要明確設 background-size，否則被 preset 的 shorthand 重設成 auto → 照片用原圖大小顯示（變大）
+      el.style.background=''; el.style.backgroundColor='#000';
+      el.style.backgroundImage=`url("${bg.value}")`;
+      el.style.backgroundSize='cover'; el.style.backgroundPosition='center'; el.style.backgroundRepeat='no-repeat';
+    } else {   // preset 顏色 / 漸層
+      el.style.backgroundImage='none'; el.style.background=bg.value;
+    }
   }
   function saveBg(bg){ try{ localStorage.setItem('nc.chatbg', JSON.stringify(bg)); }catch(e){ toast('照片太大無法儲存'); } applyBg(bg); }
   function renderBgGrid(){

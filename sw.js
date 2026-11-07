@@ -3,7 +3,7 @@
 //    - index.html：先上網抓最新（3 秒內沒回應就用存的），一更新馬上生效
 //    - 其他檔案：先用存的秒開，背景再更新
 //  - 聊天後端 /api/* 不快取，照常連網（之後接真後端用）
-const CACHE = 'novachat-v11';
+const CACHE = 'novachat-v12';
 const PRECACHE = ['./NovaCHAT.html', './index.html', './manifest.json'];
 const PAGE = new URL('./NovaCHAT.html', self.location).href;
 
