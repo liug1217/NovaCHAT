@@ -423,37 +423,36 @@
 
   <script>
   /* 資料層 Store（本地範例；之後換 fetch('/api/...')）*/
+  // 開發者：只留一個測試聊天室（所有示範聯絡人已刪除）
   const SEED = { me:'me', chats:[
-    { id:'c1', type:'dm', name:'林子晴', color:'#ff7a59', online:true, muted:false, time:'下午 2:05', unread:2,
-      msgs:[ {from:'林子晴',text:'在嗎？週末有空嗎',t:'今天 下午 2:02'},{from:'林子晴',text:'那我們約週六下午見！',t:'今天 下午 2:05'} ] },
-    { id:'g1', type:'group', name:'設計小組', color:'#5b6cff', members:6, muted:false, time:'早上 9:12', unread:5,
-      msgs:[ {from:'阿哲',text:'新版 Logo 已上傳',t:'今天 早上 9:10'},{from:'阿哲',text:'大家看看配色',t:'今天 早上 9:12'} ] },
-    { id:'c2', type:'dm', name:'Kevin', color:'#37b6d6', online:false, muted:false, time:'早上 8:40', unread:0,
-      msgs:[ {from:'me',text:'檔案收到了嗎？',t:'今天 早上 8:38',status:'read'},{from:'Kevin',text:'收到，謝謝！',t:'今天 早上 8:39'},{from:'me',text:'👍',t:'今天 早上 8:40',status:'read'} ] },
-    { id:'g2', type:'group', name:'家庭群組', color:'#34c759', members:4, muted:true, time:'昨天', unread:0,
-      msgs:[ {from:'媽',text:'晚餐吃火鍋喔',t:'昨天 晚上 6:20'} ] },
-    { id:'c3', type:'dm', name:'陳柏宇', color:'#a06bff', online:true, muted:false, time:'昨天', unread:0,
-      msgs:[ {from:'me',text:'你傳的檔案我下載好了',t:'昨天 晚上 9:11',status:'delivered'} ] },
-    { id:'c4', type:'dm', name:'Amy', color:'#ff2d87', online:false, muted:false, time:'週一', unread:0,
-      msgs:[ {from:'Amy',text:'哈哈哈哈太好笑了',t:'週一 中午 12:30'} ] },
-    { id:'g3', type:'group', name:'週末登山團', color:'#ff9f0a', members:12, muted:false, time:'週一', unread:1,
-      msgs:[ {from:'隊長',text:'天氣預報下雨，改期？',t:'週一 晚上 8:01'} ] },
-    { id:'c5', type:'dm', name:'王美玲', color:'#8e8e93', online:false, muted:false, time:'11/3', unread:0,
-      msgs:[ {from:'me',text:'好的沒問題',t:'11/3 下午 3:00',status:'read'} ] },
+    { id:'test', type:'dm', name:'測試聊天室', color:'#007aff', online:true, muted:false, time:'剛剛', unread:0,
+      msgs:[ {from:'測試聊天室', text:'這是測試聊天室，傳訊息會自動儲存（重載不會消失）✅', t:'今天'} ] },
   ] };
+  // 資料層：照 Group 用 localStorage 持久化（傳訊息自動儲存、重載不消失，像有伺服器）
+  const STORE_V = 2;   // 版本號：改大即會重設本機資料（清掉舊聯絡人）
   const Store = {
     _c: [],
-    async fetchChats(){ this._c = SEED.chats.map(c => ({...c, msgs:[...c.msgs]})); return this._c; },
+    _save(){ try{ localStorage.setItem('nc.store', JSON.stringify({ v:STORE_V, chats:this._c })); }catch(e){} },
+    async fetchChats(){
+      try{ const raw=localStorage.getItem('nc.store'); if(raw){ const d=JSON.parse(raw); if(d && d.v===STORE_V && Array.isArray(d.chats)){ this._c=d.chats; return this._c; } } }catch(e){}
+      this._c = SEED.chats.map(c => ({...c, msgs:[...c.msgs]})); this._save(); return this._c;
+    },
     all(){ return this._c; },
     get(id){ return this._c.find(c => c.id === id); },
     unreadTotal(){ return this._c.reduce((n,c)=>n+(c.unread||0),0); },
     send(id, text){ const c=this.get(id); if(!c) return; const now=new Date();
-      c.msgs.push({ from:'me', text, t:fmtWhen(now), status:'delivered' }); c.time=fmtTime(now); c.unread=0; },
-    markRead(id){ const c=this.get(id); if(c) c.unread=0; },
+      c.msgs.push({ from:'me', text, t:fmtWhen(now), status:'delivered' }); c.time=fmtTime(now); c.unread=0;
+      this._c=[c, ...this._c.filter(x=>x!==c)];   // 最新對話移到最前（像真的 app）
+      this._save(); },
+    markRead(id){ const c=this.get(id); if(c){ c.unread=0; this._save(); } },
     addChat(opts){ const palette=['#ff7a59','#5b6cff','#37b6d6','#34c759','#a06bff','#ff2d87','#ff9f0a','#8e8e93'];
       const c={ id:'u'+Date.now(), color:palette[Math.floor(Math.random()*palette.length)], online:false, muted:false, time:fmtTime(new Date()), unread:0, msgs:[], ...opts };
-      this._c.unshift(c); return c; },
+      this._c.unshift(c); this._save(); return c; },
+    removeChat(id){ this._c=this._c.filter(c=>c.id!==id); this._save(); },
+    clearAll(){ this._c=[]; this._save(); },   // 刪除所有聯絡人（開發用）
   };
+  // 開發者：主控台輸入 ncReset() 可清掉所有聊天並重設測試室
+  window.ncReset = ()=>{ try{ localStorage.removeItem('nc.store'); }catch(e){} location.reload(); };
 
   const State = { filter:'all', query:'', openId:null };
   const $ = (s)=>document.querySelector(s);
