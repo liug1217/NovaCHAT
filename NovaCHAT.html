@@ -12,7 +12,7 @@
   <meta name="theme-color" content="#ffffff">
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/svg+xml" href="assets/icon.svg">
-  <link rel="apple-touch-icon" href="assets/icon.svg">
+  <link rel="apple-touch-icon" href="assets/icon-180.png">
   <title>NovaCHAT</title>
   <style>
     :root {
@@ -209,6 +209,11 @@
     .auth-title { font-size: 26px; font-weight: 700; margin-bottom: 26px; font-family: var(--inter); }
     .auth-form { width: 100%; display: flex; flex-direction: column; gap: 12px; }
     .auth-form[hidden] { display: none; }
+    .auth-photo { width: 82px; height: 82px; border-radius: 50%; background: var(--nc-fill-secondary); display: grid; place-items: center; cursor: pointer; overflow: hidden; align-self: center; margin-bottom: 4px; }
+    .auth-photo img { width: 100%; height: 100%; object-fit: cover; display: none; }
+    .auth-photo span { font-size: 32px; color: var(--nc-label-secondary); }
+    .auth-photo.has-img img { display: block; }
+    .auth-photo.has-img span { display: none; }
     .auth-form input { border: 0; background: var(--nc-fill-secondary); border-radius: 12px; padding: 14px; font-size: 16px; font-family: var(--sf); outline: none; }
     .auth-form input:focus { box-shadow: inset 0 0 0 2px #06C755; }
     .auth-btn { margin-top: 6px; border: 0; border-radius: 12px; background: #06C755; color: #fff; font-size: 17px; font-weight: 700; font-family: var(--sf); padding: 14px; cursor: pointer; }
@@ -320,13 +325,15 @@
         <span class="auth-logo"><svg viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="114" fill="#06C755"/><path fill="#fff" d="M256 116c-84.6 0-153.2 55.3-153.2 123.5 0 39.4 22.9 74.5 58.7 97.3l-13.8 49.6c-2.4 8.6 7 15.7 14.6 11.1l63-38.3c9.8 1.8 20.1 2.8 30.7 2.8 84.6 0 153.2-55.3 153.2-123.5S340.6 116 256 116z"/><circle cx="206" cy="239" r="17" fill="#06C755"/><circle cx="256" cy="239" r="17" fill="#06C755"/><circle cx="306" cy="239" r="17" fill="#06C755"/></svg></span>
         <h1 class="auth-title">NovaCHAT</h1>
         <form class="auth-form" id="loginForm" autocomplete="on">
-          <input id="loginAcct" type="text" placeholder="帳號" autocomplete="username" required>
+          <input id="loginAcct" type="text" placeholder="ID 或名稱" autocomplete="username" required>
           <input id="loginPw" type="password" placeholder="密碼" autocomplete="current-password" required>
           <button type="submit" class="auth-btn" id="loginBtn">登入</button>
           <p class="auth-switch">還沒有帳號？<a id="toRegister">註冊</a></p>
         </form>
         <form class="auth-form" id="registerForm" autocomplete="on" hidden>
-          <input id="regAcct" type="text" placeholder="帳號" autocomplete="username" required>
+          <label class="auth-photo" id="regPhotoLabel" title="上傳頭像"><img id="regPhotoImg" alt=""><span id="regPhotoPlus">＋</span><input id="regPhoto" type="file" accept="image/*" hidden></label>
+          <input id="regName" type="text" placeholder="名稱" autocomplete="nickname" required>
+          <input id="regId" type="text" placeholder="ID（讓別人加你）" autocomplete="username" required>
           <input id="regPw" type="password" placeholder="密碼（至少 4 位）" autocomplete="new-password" required>
           <input id="regPw2" type="password" placeholder="確認密碼" autocomplete="new-password" required>
           <button type="submit" class="auth-btn" id="registerBtn">註冊</button>
@@ -386,8 +393,8 @@
       <div class="topbar"><div class="chat-label" style="font-size:28px;font-weight:700;margin-top:8px">我的</div></div>
       <div class="me-body">
         <div class="me-head">
-          <span class="me-ava">我</span>
-          <span class="me-info"><b>我</b><span>ID: nova_me</span></span>
+          <span class="me-ava" id="meAva">我</span>
+          <span class="me-info"><b id="meName">我</b><span id="meId">ID: —</span></span>
         </div>
         <div class="me-list">
           <button class="me-row" data-me="notify"><span>通知</span><span class="chev">›</span></button>
@@ -717,25 +724,38 @@
     }, 1400 + Math.random()*700); }
 
   // ===== 載入畫面 + 註冊 / 登入 =====
+  // 更新「我的」頁的頭像 / 名稱 / ID（從登入帳號）
+  function updateMe(){
+    let u=null; try{ const id=localStorage.getItem('nc.user'); const users=JSON.parse(localStorage.getItem('nc.users')||'{}'); u=users[id]; }catch(e){}
+    const ava=document.getElementById('meAva'), nm=document.getElementById('meName'), mid=document.getElementById('meId'); if(!ava) return;
+    if(u){ nm.textContent=u.name; mid.textContent='ID: '+u.id;
+      if(u.photo){ ava.style.backgroundImage='url("'+u.photo+'")'; ava.style.backgroundSize='cover'; ava.style.backgroundPosition='center'; ava.textContent=''; }
+      else { ava.style.backgroundImage=''; ava.textContent=initials(u.name); } }
+  }
   function setupAuth(){
     const splash=document.getElementById('splash'), auth=document.getElementById('auth');
     const sha=async(s)=>{ try{ const b=await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join(''); }catch{ return 'x'+s; } };
     const getUsers=()=>{ try{ return JSON.parse(localStorage.getItem('nc.users')||'{}'); }catch{ return {}; } };
     const setUsers=(u)=>{ try{ localStorage.setItem('nc.users', JSON.stringify(u)); }catch{} };
     const loggedIn=()=>{ try{ return localStorage.getItem('nc.user'); }catch{ return null; } };
-    const enterApp=()=>{ auth.hidden=true; askNotify(); };
+    const enterApp=()=>{ auth.hidden=true; updateMe(); askNotify(); };
+    // 頭像上傳（註冊）
+    let regPhoto=''; const pInput=document.getElementById('regPhoto'), pLabel=document.getElementById('regPhotoLabel'), pImg=document.getElementById('regPhotoImg');
+    pInput.addEventListener('change',(e)=>{ const f=e.target.files&&e.target.files[0]; if(!f) return;
+      const r=new FileReader(); r.onload=()=>downscale(r.result,(small)=>{ regPhoto=small; pImg.src=small; pLabel.classList.add('has-img'); }); r.readAsDataURL(f); });
     document.getElementById('toRegister').addEventListener('click',()=>{ document.getElementById('loginForm').hidden=true; document.getElementById('registerForm').hidden=false; });
     document.getElementById('toLogin').addEventListener('click',()=>{ document.getElementById('registerForm').hidden=true; document.getElementById('loginForm').hidden=false; });
     document.getElementById('loginForm').addEventListener('submit', async(e)=>{ e.preventDefault();
-      const a=document.getElementById('loginAcct').value.trim(), p=document.getElementById('loginPw').value;
-      if(!a||!p) return; const users=getUsers(); if(!users[a]){ toast('帳號不存在'); return; } if(users[a]!==await sha(p)){ toast('密碼錯誤'); return; }
-      localStorage.setItem('nc.user', a); toast('歡迎回來，'+a); enterApp(); });
+      const a=document.getElementById('loginAcct').value.trim(), p=document.getElementById('loginPw').value; if(!a||!p) return;
+      const users=getUsers(); let u=users[a] || Object.values(users).find(x=>x.name===a);   // 用 ID 或名稱登入
+      if(!u){ toast('帳號不存在'); return; } if(u.pw!==await sha(p)){ toast('密碼錯誤'); return; }
+      localStorage.setItem('nc.user', u.id); toast('歡迎回來，'+u.name); enterApp(); });
     document.getElementById('registerForm').addEventListener('submit', async(e)=>{ e.preventDefault();
-      const a=document.getElementById('regAcct').value.trim(), p=document.getElementById('regPw').value, p2=document.getElementById('regPw2').value;
-      if(!a||!p) return; if(p.length<4){ toast('密碼至少 4 位'); return; } if(p!==p2){ toast('兩次密碼不一致'); return; }
-      const users=getUsers(); if(users[a]){ toast('帳號已存在'); return; } users[a]=await sha(p); setUsers(users); localStorage.setItem('nc.user', a); toast('註冊成功！'); enterApp(); });
-    // 圖標 splash 顯示一下就淡出；未登入 → 顯示登入
-    setTimeout(()=>{ splash.classList.add('is-hiding'); setTimeout(()=>{ splash.hidden=true; if(!loggedIn()) auth.hidden=false; else askNotify(); }, 420); }, 1100);
+      const name=document.getElementById('regName').value.trim(), id=document.getElementById('regId').value.trim(), p=document.getElementById('regPw').value, p2=document.getElementById('regPw2').value;
+      if(!name||!id||!p) return; if(p.length<4){ toast('密碼至少 4 位'); return; } if(p!==p2){ toast('兩次密碼不一致'); return; }
+      const users=getUsers(); if(users[id]){ toast('此 ID 已被使用'); return; }
+      users[id]={ name, id, photo:regPhoto||'', pw:await sha(p) }; setUsers(users); localStorage.setItem('nc.user', id); toast('註冊成功！'); enterApp(); });
+    setTimeout(()=>{ splash.classList.add('is-hiding'); setTimeout(()=>{ splash.hidden=true; if(!loggedIn()) auth.hidden=false; else { updateMe(); askNotify(); } }, 420); }, 1100);
   }
 
   function bind(){
@@ -814,7 +834,11 @@
       document.querySelectorAll('.chip').forEach(x=>x.classList.toggle('active',x.dataset.filter==='all')); renderList(); toast(msg); };
     document.querySelectorAll('.sheet-item[data-new]').forEach(b=>b.addEventListener('click',()=>{
       const kind=b.dataset.new; closeSheet('composeSheet');
-      setTimeout(()=>{ if(kind==='friend') openPrompt('新增好友','輸入好友名稱',(n)=>addAndShow({type:'dm', name:n, online:true}, '已新增好友：'+n));
+      setTimeout(()=>{ if(kind==='friend') openPrompt('新增好友','輸入好友 ID',(id)=>{
+          if(id===localStorage.getItem('nc.user')){ toast('不能加自己'); return; }
+          let user=null; try{ user=JSON.parse(localStorage.getItem('nc.users')||'{}')[id]; }catch(e){}
+          if(user) addAndShow({type:'dm', name:user.name, online:true, photo:user.photo||''}, '已新增好友：'+user.name);
+          else addAndShow({type:'dm', name:id, online:true}, '已新增：'+id+'（此 ID 尚未註冊）'); });
         else openPrompt('建立群組','輸入群組名稱',(n)=>addAndShow({type:'group', name:n, members:1}, '已建立群組：'+n)); }, 180); }));
 
     // ===== 貼圖（對話的 ＋ 按鈕）=====

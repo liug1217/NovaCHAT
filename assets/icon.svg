@@ -1,7 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="NovaCHAT">
-  <rect width="512" height="512" rx="114" fill="#06C755"/>
-  <path fill="#ffffff" d="M256 116c-84.6 0-153.2 55.3-153.2 123.5 0 39.4 22.9 74.5 58.7 97.3l-13.8 49.6c-2.4 8.6 7 15.7 14.6 11.1l63-38.3c9.8 1.8 20.1 2.8 30.7 2.8 84.6 0 153.2-55.3 153.2-123.5S340.6 116 256 116z"/>
-  <circle cx="206" cy="239" r="17" fill="#06C755"/>
-  <circle cx="256" cy="239" r="17" fill="#06C755"/>
-  <circle cx="306" cy="239" r="17" fill="#06C755"/>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2AE27A"/>
+      <stop offset="1" stop-color="#03A849"/>
+    </linearGradient>
+    <linearGradient id="bub" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#eafff2"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="120" fill="url(#bg)"/>
+  <circle cx="150" cy="150" r="150" fill="#ffffff" opacity="0.08"/>
+  <path fill="url(#bub)" d="M256 112c-86.4 0-156.4 56.1-156.4 125.3 0 40 23.4 75.6 60 98.6l-15.4 55.4c-2.6 9.3 7.6 17 15.8 12l70.3-42.8c8.5 1.5 17 2.3 25.7 2.3 86.4 0 156.4-56.1 156.4-125.3S342.4 112 256 112z"/>
+  <circle cx="200" cy="238" r="18.5" fill="#12C063"/>
+  <circle cx="256" cy="238" r="18.5" fill="#12C063"/>
+  <circle cx="312" cy="238" r="18.5" fill="#12C063"/>
 </svg>
