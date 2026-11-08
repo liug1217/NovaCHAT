@@ -119,7 +119,8 @@
     .tab-lens__canvas { position: absolute; left: 0; top: 0; width: 100%; height: 100%; display: block; }
     .tab { flex: 1; z-index: 1; height: 52px; border: 0; background: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border-radius: 999px; color: #000; font-family: var(--sf); position: relative; transition: color .2s ease; }
     /* 底部通知：聊天 tab 的未讀紅點數字（學 Group） */
-    .tab .tab-badge { position: absolute; top: 3px; left: 50%; margin-left: 4px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px; background: var(--nc-badge); color: #fff; font-size: 10px; font-weight: 700; line-height: 16px; font-family: var(--sf); text-align: center; box-shadow: 0 0 0 1.5px var(--nc-bar-fill); pointer-events: none; }
+    .tab .tab-badge { position: absolute; left: calc(50% + 6px); top: 6px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px; background: #E5484D; color: #fff; font-size: 10px; line-height: 16px; font-family: var(--sf); text-align: center; box-sizing: border-box; pointer-events: none; }
+    .tabbar-inner.is-dragging .tab .tab-badge { visibility: hidden; }
     .tab .tab-badge[hidden] { display: none; }
     .tab .ico { width: 26px; height: 26px; display: grid; place-items: center; }
     .tab .ico svg { width: 24px; height: 24px; fill: currentColor; }
@@ -142,7 +143,14 @@
     .convo-actions button { border: 0; background: none; color: #000; cursor: pointer; width: 34px; height: 34px; display: grid; place-items: center; }
     .convo-actions svg { width: 22px; height: 22px; }
     /* 訊息區（聊天背景套在這裡）*/
-    .msgs { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; touch-action: pan-y; padding: 14px 12px 8px; display: flex; flex-direction: column; gap: 3px; background: transparent; }
+    .msgs { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; touch-action: pan-y; padding: 14px 12px 8px; display: flex; flex-direction: column; gap: 3px; background: transparent; }
+    /* 每則訊息一行（照 Group）：往左滑整排左移、右邊露出時間 */
+    .msg { position: relative; display: flex; flex-direction: column; translate: var(--time-x, 0px) 0; transition: translate .25s cubic-bezier(.2,.8,.2,1); }
+    .msgs.is-time-drag .msg { transition: none; }
+    .msg.is-me { align-items: flex-end; }
+    .msg:not(.is-me) { align-items: flex-start; }
+    .msg-side-time { position: absolute; left: 100%; margin-left: 10px; top: 11px; font-size: 11px; color: var(--nc-text-2); white-space: nowrap; opacity: 0; pointer-events: none; }
+    .msgs.is-time-peek .msg-side-time { opacity: 1; }
     .msgs::-webkit-scrollbar { width: 0; }
     .bubble { max-width: 76%; padding: 8px 13px; border-radius: 20px; font-size: 16px; line-height: 1.35; word-break: break-word; position: relative; box-shadow: 0 1px 1px rgba(0,0,0,0.06); }
     .bubble.them { align-self: flex-start; background: var(--nc-bubble-them); color: #000; border-bottom-left-radius: 6px; }
@@ -504,10 +512,10 @@
   function msgHTML(m, c){
     const mine=m.from==='me';
     const who=(!mine && c.type==='group')?`<span class="who">${esc(m.from)}</span>`:'';
-    const bubble=`<div class="bubble ${mine?'me':'them'}">${who}${esc(m.text)}<span class="mt">${esc(m.t)}</span></div>`;
-    // 我傳的訊息：底部顯示已讀 / 未讀
-    if(mine){ const read=m.status==='read'; return bubble+`<div class="rr${read?' read':''}">${read?'已讀':'未讀'}</div>`; }
-    return bubble;
+    const rr = mine ? `<div class="rr${m.status==='read'?' read':''}">${m.status==='read'?'已讀':'未讀'}</div>` : '';
+    const tshort = esc(String(m.t).split(' ').pop());   // 時間只留 時:分，左滑時在右邊露出
+    // 時間不再嵌在氣泡內：往左滑整排左移、右邊露出 .msg-side-time（照 Group）
+    return `<div class="msg ${mine?'is-me':''}"><div class="bubble ${mine?'me':'them'}">${who}${esc(m.text)}</div>${rr}<span class="msg-side-time">${tshort}</span></div>`;
   }
   function openConvo(id){
     const c=Store.get(id); if(!c) return;
@@ -640,6 +648,35 @@
     $('#chips').addEventListener('click',(e)=>{ const ch=e.target.closest('.chip'); if(!ch) return; State.filter=ch.dataset.filter; document.querySelectorAll('.chip').forEach(x=>x.classList.toggle('active',x===ch)); renderList(); });
     $('#list').addEventListener('click',(e)=>{ const r=e.target.closest('.crow'); if(!r) return; openConvo(r.dataset.id); });
     $('#convoBack').addEventListener('click',closeConvo);
+    // 對話：由左緣往右滑返回（照 Group：對話跟手指右移淡出，底下列表 + 底部膠囊慢慢露出）
+    (function convoSwipe(){
+      const co=$('#convo'); const EDGE=36; let s=null;
+      co.addEventListener('pointerdown',(e)=>{ if(!co.classList.contains('open')) return; if(e.clientX>EDGE) return;
+        if(e.target.closest('textarea, input, .send, .plus')) return; s={ x0:e.clientX, y0:e.clientY, id:e.pointerId, active:false }; });
+      co.addEventListener('pointermove',(e)=>{ if(!s||e.pointerId!==s.id) return; const dx=e.clientX-s.x0, dy=e.clientY-s.y0;
+        if(!s.active){ if((Math.abs(dy)>12&&Math.abs(dy)>Math.abs(dx))||dx<-12){ s=null; return; } if(dx<12||Math.abs(dx)<Math.abs(dy)) return;
+          s.active=true; s.x0=e.clientX; co.style.transition='none'; try{ co.setPointerCapture(e.pointerId); }catch{} }
+        const d=Math.max(0, e.clientX-s.x0); co.style.transform='translateX('+d+'px)'; co.style.opacity=String(Math.max(.25, 1 - d/window.innerWidth*1.1)); });
+      function end(e,cancelled){ if(!s) return; const active=s.active; const d=(cancelled||!active)?0:Math.max(0,e.clientX-s.x0); s=null; if(!active) return;
+        co.style.transition='transform .25s ease, opacity .25s ease';
+        if(d>Math.min(120, window.innerWidth*0.3)){ co.style.transform='translateX(100%)'; co.style.opacity='0';
+          setTimeout(()=>{ co.classList.remove('open'); co.setAttribute('aria-hidden','true'); co.style.transition=''; co.style.transform=''; co.style.opacity=''; State.openId=null; renderList(); }, 240);
+        } else { co.style.transform='translateX(0)'; co.style.opacity='1';
+          setTimeout(()=>{ co.style.transition=''; co.style.transform=''; co.style.opacity=''; }, 240); } }
+      co.addEventListener('pointerup',(e)=>end(e,false));
+      co.addEventListener('pointercancel',(e)=>end(e,true));
+    })();
+    // 訊息往左滑：整排左移、右邊露出時間（照 Group）
+    (function timePeek(){
+      const msgs=$('#msgs'); const SHIFT=72; let s=null, peekTimer=0;
+      msgs.addEventListener('pointerdown',(e)=>{ s={ x0:e.clientX, y0:e.clientY, id:e.pointerId, mode:null }; });
+      msgs.addEventListener('pointermove',(e)=>{ if(!s||e.pointerId!==s.id) return; const dx=e.clientX-s.x0, dy=e.clientY-s.y0;
+        if(!s.mode){ if(Math.abs(dy)>10&&Math.abs(dy)>Math.abs(dx)){ s=null; return; }
+          if(dx<-10){ s.mode='time'; clearTimeout(peekTimer); msgs.classList.add('is-time-peek','is-time-drag'); s.x0=e.clientX; try{ msgs.setPointerCapture(e.pointerId); }catch{} } else return; }
+        const move=e.clientX-s.x0; const raw=Math.min(0,move); const shift=raw>-SHIFT?raw:-SHIFT+(raw+SHIFT)*0.2; msgs.style.setProperty('--time-x', shift+'px'); });
+      function end(){ if(!s||!s.mode){ s=null; return; } s=null; msgs.classList.remove('is-time-drag'); msgs.style.removeProperty('--time-x'); peekTimer=setTimeout(()=>msgs.classList.remove('is-time-peek'),320); }
+      msgs.addEventListener('pointerup',end); msgs.addEventListener('pointercancel',end);
+    })();
     document.querySelectorAll('.convo-actions button').forEach(b=>b.addEventListener('click',()=>{
       const a=b.dataset.act;
       if(a==='bg'){ openBgSheet(); return; }
