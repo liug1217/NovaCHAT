@@ -45,10 +45,7 @@
     .app {
       /* 照 Group：用 100vh（iOS 固定為工具列收起時的最大高度，不像 dvh 會動），
          畫面永遠 ≥ 可見範圍 → 底部不會「有時多一塊」；底欄是 fixed 永遠貼可見底部 */
-      position: relative; width: 100%;
-      /* 預設沿用 100vh（照 Group：不會跟工具列而動）；鍵盤彈出時由 JS 以 --app-h = visualViewport.height 覆蓋，
-         令版面縮到鍵盤上方的「可視區域」，而不是被瀏覽器整頁往上推 */
-      height: var(--app-h, 100vh);
+      position: relative; width: 100%; height: 100vh;
       background: #fff; overflow: hidden; display: flex; flex-direction: column;
     }
 
@@ -136,7 +133,8 @@
     .bubble.me .mt { color: #000; }
     /* 半透明毛玻璃：讓聊天背景透到底部、真正全螢幕 */
     /* 底部透明：照片透到最下（無白底、無分隔線）*/
-    .composer { flex: 0 0 auto; display: flex; align-items: flex-end; gap: 8px; padding: 8px 12px calc(10px + env(safe-area-inset-bottom)); border-top: 0; background: transparent; }
+    /* 鍵盤：只有訊息筐升起（margin-bottom = 鍵盤高度），背景容器 .convo 完全不縮 → 聊天背景相片不會變窄、不會閃 */
+    .composer { flex: 0 0 auto; display: flex; align-items: flex-end; gap: 8px; padding: 8px 12px calc(10px + env(safe-area-inset-bottom)); border-top: 0; background: transparent; margin-bottom: var(--kb, 0px); transition: margin-bottom .2s ease-out; }
     .composer .plus { border: 0; background: none; color: #000; cursor: pointer; width: 34px; height: 34px; flex: 0 0 auto; display: grid; place-items: center; }
     .composer .plus svg { width: 26px; height: 26px; }
     .composer .field { flex: 1; min-width: 0; display: flex; align-items: center; background: var(--nc-fill-secondary); border-radius: 20px; padding: 7px 14px; }
@@ -449,42 +447,27 @@
   let lastTouch=0;
   document.addEventListener('touchend',(e)=>{ const now=Date.now(); if(now-lastTouch<=300) e.preventDefault(); lastTouch=now; }, {passive:false});
 
-  /* ===== 手機鍵盤修復：跟「可視視口」縮放版面，而非讓瀏覽器整頁往上推 =====
-     原理同真實聊天 App（WhatsApp Web / Telegram Web）一致：
-     用 VisualViewport API 取得鍵盤彈出後的實際可視高度，把 .app 高度設成該值，
-     並抵銷 iOS 把整頁上捲的 offsetTop → 頂欄留在原位、輸入列貼住鍵盤頂。 */
+  /* ===== 手機鍵盤：只讓底部訊息筐升起，背景不縮、不閃 =====
+     只用 VisualViewport 量出鍵盤高度寫進 --kb；由 .composer 的 margin-bottom 吃掉 → 訊息列表縮短、
+     訊息筐升到鍵盤上方。背景容器 .convo 高度完全不變，所以聊天背景相片不會被重新裁切（不變窄），
+     也沒有改高度 / transform / setTimeout 補畫，所以不會閃。 */
   (function keyboardFix(){
     const vv = window.visualViewport;
-    if(!vv) return;                      // 舊瀏覽器：維持原本 100vh 行為
+    if(!vv) return;                      // 舊瀏覽器：--kb 維持 0，行為同原本
     const root = document.documentElement;
-    const app  = document.getElementById('app');
-    let active = false, raf = 0;         // active：輸入框已聚焦（一 focus 就跟隨，不靠鍵盤高度門檻）
+    let raf = 0;
     function apply(){
       raf = 0;
-      if(active){
-        // 聚焦期間：把版面縮到「可視視口」實際高度、抵銷 iOS 整頁上捲 → 輸入列即刻升到鍵盤頂、頂欄留原位
-        root.classList.add('kb-open');
-        root.style.setProperty('--app-h', Math.round(vv.height) + 'px');
-        app.style.transform = 'translateY(' + Math.round(vv.offsetTop) + 'px)';
+      const kb = Math.max(0, Math.round(window.innerHeight - vv.height));   // 鍵盤高度
+      root.style.setProperty('--kb', kb + 'px');
+      if(kb > 0){
+        if(window.scrollY) window.scrollTo(0, 0);                 // 防止 iOS 把整頁上捲（頂欄留原位）
         if(State.openId){ const m = document.getElementById('msgs'); if(m) m.scrollTop = m.scrollHeight; }
-      }else{
-        root.classList.remove('kb-open');
-        root.style.removeProperty('--app-h');        // 失焦：還原 100vh
-        app.style.transform = '';
-        if(window.scrollY) window.scrollTo(0, 0);     // 修正殘留的整頁位移
       }
     }
     const schedule = ()=>{ if(!raf) raf = requestAnimationFrame(apply); };
     vv.addEventListener('resize', schedule);
     vv.addEventListener('scroll', schedule);
-    // 一聚焦輸入框（即使未打字）就啟動；鍵盤動畫需時，稍後再同步兩次確保升上來
-    document.addEventListener('focusin', (e)=>{
-      if(e.target.closest('input, textarea')){ active = true; schedule(); setTimeout(schedule, 250); setTimeout(schedule, 500); }
-    });
-    // 失焦：等焦點結算，若已不在任何輸入框才還原（避免輸入框之間切換時閃動）
-    document.addEventListener('focusout', ()=>{
-      setTimeout(()=>{ const a = document.activeElement; if(!(a && a.matches('input, textarea'))){ active = false; schedule(); } }, 60);
-    });
   })();
 
   (async function init(){ bind(); applyBg(getBg()); await Store.fetchChats(); renderList();
