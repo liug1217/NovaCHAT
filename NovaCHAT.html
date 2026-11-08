@@ -49,16 +49,17 @@
       background: #fff; overflow: hidden; display: flex; flex-direction: column;
     }
 
-    /* 頂部 */
-    .topbar { flex: 0 0 auto; padding: calc(env(safe-area-inset-top, 0px) + 14px) 16px 0; }
-    .search { width: 100%; height: 36px; display: flex; align-items: center; gap: 8px; padding: 0 11px; background: var(--nc-fill-secondary); border-radius: 100px; }
+    /* 頂部 — 位置照 Figma（frame 440×956）：搜尋 x10 y50 420×40；頂部貼安全區下緣 */
+    .topbar { flex: 0 0 auto; padding: env(safe-area-inset-top, 0px) 10px 0; }
+    .search { width: 100%; height: 40px; display: flex; align-items: center; gap: 8px; padding: 0 11px; background: var(--nc-fill-secondary); border-radius: 100px; }
     .search .mag { width: 21px; height: 22px; flex: 0 0 auto; color: var(--nc-label-secondary); display: grid; place-items: center; }
     .search .mag svg { width: 16px; height: 16px; }
     .search input { flex: 1; min-width: 0; border: 0; background: transparent; outline: none; font-family: var(--sf); font-size: 17px; line-height: 22px; letter-spacing: -0.08px; color: #000; }
     .search input::placeholder { color: var(--nc-label-secondary); opacity: 1; }
     .search .mic { width: 17px; height: 22px; flex: 0 0 auto; color: var(--nc-label-secondary); display: grid; place-items: center; }
     .search .mic svg { width: 15px; height: 20px; }
-    .chat-label { margin: 16px 0 0 2px; font-family: var(--inter); font-weight: 400; font-size: 12px; color: #000; white-space: nowrap; }
+    /* 「聊天」標題照 Figma：x62 y149（Inter 12 #000）→ 搜尋下方 59px、左縮 52px（topbar 已 10px） */
+    .chat-label { margin: 59px 0 0 52px; font-family: var(--inter); font-weight: 400; font-size: 12px; color: #000; white-space: nowrap; }
     .chips { display: flex; gap: 8px; margin-top: 12px; }
     .chip { border: 0; cursor: pointer; font-family: var(--sf); font-size: 14px; font-weight: 600; background: var(--nc-chip); color: #3c3c43; padding: 7px 15px; border-radius: 100px; display: inline-flex; align-items: center; gap: 6px; }
     .chip.active { background: var(--nc-blue); color: #fff; }
@@ -97,11 +98,12 @@
 
     /* Tab Bar — iOS 底部不過高：用 max() 不疊加 safe-area */
     /* 照 Group：固定高度、離底固定距離，不吃 safe-area → 不會變高 */
-    .tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; display: flex; justify-content: center; padding: 0 16px 20px; }
-    .tabbar-inner { width: 100%; height: 62px; background: var(--nc-bar-fill); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px); border: 0.5px solid rgba(0,0,0,0.08); border-radius: 999px; box-shadow: 0 6px 20px rgba(0,0,0,0.10); display: flex; align-items: center; padding: 0 4px; position: relative; touch-action: none; }
+    /* 位置照 Figma：容器左右 25px、底部 25px；膠囊高 54px、內距 0 2px（顏色/玻璃樣式不變） */
+    .tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; display: flex; justify-content: center; padding: 0 25px 25px; }
+    .tabbar-inner { width: 100%; height: 54px; background: var(--nc-bar-fill); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px); border: 0.5px solid rgba(0,0,0,0.08); border-radius: 999px; box-shadow: 0 6px 20px rgba(0,0,0,0.10); display: flex; align-items: center; padding: 0 2px; position: relative; touch-action: none; }
     /* 動畫參考 Group.html：改用 transform 移動 + 彈性曲線（樣式/顏色/大小不變，只改動畫） */
-    .tab-lens { position: absolute; top: 5px; height: 52px; left: 0; width: 0; background: var(--nc-bar-active); border-radius: 999px; z-index: 0; pointer-events: none; transform: translateX(0); transition: transform .45s cubic-bezier(.34,1.56,.64,1); will-change: transform; }
-    .tab { flex: 1; z-index: 1; height: 52px; border: 0; background: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border-radius: 999px; color: #000; font-family: var(--sf); position: relative; }
+    .tab-lens { position: absolute; top: 0; height: 54px; left: 0; width: 0; background: var(--nc-bar-active); border-radius: 999px; z-index: 0; pointer-events: none; transform: translateX(0); transition: transform .45s cubic-bezier(.34,1.56,.64,1); will-change: transform; }
+    .tab { flex: 1; z-index: 1; height: 54px; border: 0; background: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border-radius: 999px; color: #000; font-family: var(--sf); position: relative; }
     .tab .ico { width: 26px; height: 26px; display: grid; place-items: center; }
     .tab .ico svg { width: 24px; height: 24px; fill: currentColor; }
     .tab .lbl { font-size: 10px; line-height: 1; font-weight: 500; white-space: nowrap; }
