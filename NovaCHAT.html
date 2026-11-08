@@ -98,7 +98,14 @@
     /* Tab Bar — iOS 底部不過高：用 max() 不疊加 safe-area */
     /* 照 Group：固定高度、離底固定距離，不吃 safe-area → 不會變高 */
     .tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; display: flex; justify-content: center; padding: 0 16px 20px; }
-    .tabbar-inner { width: 100%; height: 62px; background: var(--nc-bar-fill); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px); border: 0.5px solid rgba(0,0,0,0.08); border-radius: 999px; box-shadow: 0 6px 20px rgba(0,0,0,0.10); display: flex; align-items: center; padding: 0 4px; position: relative; touch-action: none; }
+    /* 玻璃效果（參考 Group.html 的 iOS fallback：毛玻璃 blur + 白色 bezel 亮邊 + 外陰影）。
+       顏色不變：仍是同一個白（249,249,249），只降低不透明度讓背景透出（玻璃本質就是半透明）。 */
+    .tabbar-inner { width: 100%; height: 62px;
+      background: rgba(249,249,249,0.55);
+      backdrop-filter: blur(20px) saturate(190%); -webkit-backdrop-filter: blur(20px) saturate(190%);
+      border: 0; border-radius: 999px;
+      box-shadow: inset 0 1px 0.5px rgba(255,255,255,0.75), inset 0 0 0 0.5px rgba(255,255,255,0.4), inset 0 -1.5px 2px rgba(255,255,255,0.25), 0 8px 15px rgba(0,0,0,0.12);
+      display: flex; align-items: center; padding: 0 4px; position: relative; touch-action: none; }
     /* 動畫參考 Group.html：改用 transform 移動 + 彈性曲線（樣式/顏色/大小不變，只改動畫） */
     .tab-lens { position: absolute; top: 5px; height: 52px; left: 0; width: 0; background: var(--nc-bar-active); border-radius: 999px; z-index: 0; pointer-events: none; transform: translateX(0); transition: transform .45s cubic-bezier(.34,1.56,.64,1); will-change: transform; }
     .tab { flex: 1; z-index: 1; height: 52px; border: 0; background: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border-radius: 999px; color: #000; font-family: var(--sf); position: relative; }
