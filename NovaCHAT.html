@@ -98,17 +98,17 @@
 
     /* Tab Bar — iOS 底部不過高：用 max() 不疊加 safe-area */
     /* 照 Group：固定高度、離底固定距離，不吃 safe-area → 不會變高 */
-    .tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; display: flex; justify-content: center; padding: 0 16px 20px; }
-    /* 玻璃底欄（iOS fallback 毛玻璃 + bezel 亮邊；顏色不變：同一白 249,249,249，只降不透明度） */
+    /* 大膠囊：照 Group.html（插邊 21px、底 21px、白 50%、radius 1000、上緣亮邊 + 外陰影） */
+    .tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; display: flex; justify-content: center; padding: 0 21px 21px; }
     .tabbar-inner { width: 100%; height: 62px; position: relative; touch-action: none;
-      background: rgba(249,249,249,0.55);
+      background: rgba(255,255,255,0.5);
       backdrop-filter: blur(20px) saturate(190%); -webkit-backdrop-filter: blur(20px) saturate(190%);
-      border: 0; border-radius: 999px;
-      box-shadow: inset 0 1px 0.5px rgba(255,255,255,0.75), inset 0 0 0 0.5px rgba(255,255,255,0.4), inset 0 -1.5px 2px rgba(255,255,255,0.25), 0 8px 15px rgba(0,0,0,0.12); }
+      border: 0; border-radius: 1000px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.45), 0 8px 15px rgba(0,0,0,0.12); }
     /* 分頁層：鏡片滑過時用 clip-path 在這一層挖洞（底欄玻璃保持完整，不會透出背景） */
     .tab-row { position: absolute; inset: 0; display: flex; align-items: center; padding: 0 4px; }
-    /* 靜止時的灰色膠囊（照 Group：transform 移動 + 彈性曲線） */
-    .tab-pill { position: absolute; top: 5px; left: 0; height: 52px; width: 0; background: var(--nc-bar-active); border-radius: 999px; z-index: 0; pointer-events: none; transform: translateX(0); transition: transform .45s cubic-bezier(.34,1.56,.64,1), opacity .28s ease; }
+    /* 小膠囊（選取底色）：照 Group.html（top 4、高 54、radius 27、深灰 12%） */
+    .tab-pill { position: absolute; top: 4px; left: 0; height: 54px; width: 0; background: rgba(0,0,0,0.12); border-radius: 27px; z-index: 0; pointer-events: none; transform: translateX(0); transition: transform .45s cubic-bezier(.34,1.56,.64,1), opacity .28s ease; }
     .tabbar-inner.is-dragging .tab-pill { opacity: 0; }
     /* 拖動時：真實 tab 一律不藍（含原本選中的），藍色只由玻璃鏡片呈現；放手後鏡片淡出、目標 tab 才淡入藍色 */
     .tabbar-inner.is-dragging .tab { color: #000; }
@@ -711,7 +711,10 @@
     const tabs=()=>[...tabbar.querySelectorAll('.tab')];
     const TAB_PAD=4;
     const PILL='transform .45s cubic-bezier(.34,1.56,.64,1), opacity .28s ease';
-    function placePill(t, instant){ if(!t) return; pill.style.transition = instant ? 'none' : PILL; pill.style.width=t.offsetWidth+'px'; pill.style.transform='translateX('+t.offsetLeft+'px)'; if(instant) requestAnimationFrame(()=>{ pill.style.transition=PILL; }); }
+    function placePill(t, instant){ if(!t) return; pill.style.transition = instant ? 'none' : PILL;
+      const w=t.offsetWidth+12; let x=t.offsetLeft-6; x=Math.max(2, Math.min(x, tabbar.clientWidth-w-2));   // 照 Group：膠囊比分頁闊、略為重疊
+      pill.style.width=w+'px'; pill.style.transform='translateX('+x+'px)';
+      if(instant) requestAnimationFrame(()=>{ pill.style.transition=PILL; }); }
     function selectTab(t, silent){ if(!t) return;
       tabs().forEach(x=>{ const on=x===t; x.classList.toggle('active',on); on?x.setAttribute('aria-current','page'):x.removeAttribute('aria-current'); });
       placePill(t); showScreen(t.dataset.tab); }
