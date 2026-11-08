@@ -6,6 +6,10 @@
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#ffffff",
-  "theme_color": "#ffffff"
+  "background_color": "#06C755",
+  "theme_color": "#06C755",
+  "icons": [
+    { "src": "assets/icon.svg", "type": "image/svg+xml", "sizes": "any", "purpose": "any" },
+    { "src": "assets/icon.svg", "type": "image/svg+xml", "sizes": "any", "purpose": "maskable" }
+  ]
 }

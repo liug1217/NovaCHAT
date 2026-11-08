@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="NovaCHAT">
+  <rect width="512" height="512" rx="114" fill="#06C755"/>
+  <path fill="#ffffff" d="M256 116c-84.6 0-153.2 55.3-153.2 123.5 0 39.4 22.9 74.5 58.7 97.3l-13.8 49.6c-2.4 8.6 7 15.7 14.6 11.1l63-38.3c9.8 1.8 20.1 2.8 30.7 2.8 84.6 0 153.2-55.3 153.2-123.5S340.6 116 256 116z"/>
+  <circle cx="206" cy="239" r="17" fill="#06C755"/>
+  <circle cx="256" cy="239" r="17" fill="#06C755"/>
+  <circle cx="306" cy="239" r="17" fill="#06C755"/>
+</svg>

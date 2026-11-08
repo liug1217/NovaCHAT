@@ -11,6 +11,8 @@
   <meta name="apple-mobile-web-app-title" content="NovaCHAT">
   <meta name="theme-color" content="#ffffff">
   <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="assets/icon.svg">
+  <link rel="apple-touch-icon" href="assets/icon.svg">
   <title>NovaCHAT</title>
   <style>
     :root {
@@ -190,6 +192,30 @@
     .bgopt.upload { display: grid; place-items: center; background: var(--nc-fill-secondary); color: var(--nc-label-secondary); }
     .bgopt.upload svg { width: 24px; height: 24px; }
 
+    /* ===== 載入畫面（圖標）===== */
+    .splash { position: absolute; inset: 0; z-index: 100; background: #06C755; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; transition: opacity .4s ease; }
+    .splash.is-hiding { opacity: 0; pointer-events: none; }
+    .splash[hidden] { display: none; }
+    .splash-icon { width: 96px; height: 96px; animation: splash-pop .5s cubic-bezier(.34,1.56,.64,1); filter: drop-shadow(0 8px 20px rgba(0,0,0,.18)); }
+    .splash-icon svg { width: 100%; height: 100%; }
+    .splash-name { color: #fff; font-size: 24px; font-weight: 700; letter-spacing: .5px; font-family: var(--inter); }
+    @keyframes splash-pop { 0%{transform:scale(.6);opacity:0} 100%{transform:scale(1);opacity:1} }
+    /* ===== 註冊 / 登入 ===== */
+    .auth { position: absolute; inset: 0; z-index: 90; background: #fff; display: flex; align-items: center; justify-content: center; padding: calc(env(safe-area-inset-top,0px) + 24px) 24px 24px; }
+    .auth[hidden] { display: none; }
+    .auth-box { width: 100%; max-width: 340px; display: flex; flex-direction: column; align-items: center; }
+    .auth-logo { width: 72px; height: 72px; margin-bottom: 12px; }
+    .auth-logo svg { width: 100%; height: 100%; }
+    .auth-title { font-size: 26px; font-weight: 700; margin-bottom: 26px; font-family: var(--inter); }
+    .auth-form { width: 100%; display: flex; flex-direction: column; gap: 12px; }
+    .auth-form[hidden] { display: none; }
+    .auth-form input { border: 0; background: var(--nc-fill-secondary); border-radius: 12px; padding: 14px; font-size: 16px; font-family: var(--sf); outline: none; }
+    .auth-form input:focus { box-shadow: inset 0 0 0 2px #06C755; }
+    .auth-btn { margin-top: 6px; border: 0; border-radius: 12px; background: #06C755; color: #fff; font-size: 17px; font-weight: 700; font-family: var(--sf); padding: 14px; cursor: pointer; }
+    .auth-btn:active { opacity: .85; }
+    .auth-switch { text-align: center; font-size: 14px; color: var(--nc-text-2); margin-top: 8px; }
+    .auth-switch a { color: #06C755; font-weight: 600; cursor: pointer; }
+
     /* ===== 畫面切換（主頁 / 聊天 / VIDEO / 我的）===== */
     .screen { flex: 1; min-height: 0; display: flex; flex-direction: column; }
     .screen[hidden] { display: none; }
@@ -281,6 +307,33 @@
 </head>
 <body>
   <main class="app" id="app" role="application" aria-label="NovaCHAT 聊天">
+
+    <!-- 載入畫面（圖標）-->
+    <div class="splash" id="splash">
+      <span class="splash-icon"><svg viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="114" fill="#fff"/><path fill="#06C755" d="M256 116c-84.6 0-153.2 55.3-153.2 123.5 0 39.4 22.9 74.5 58.7 97.3l-13.8 49.6c-2.4 8.6 7 15.7 14.6 11.1l63-38.3c9.8 1.8 20.1 2.8 30.7 2.8 84.6 0 153.2-55.3 153.2-123.5S340.6 116 256 116z"/><circle cx="206" cy="239" r="17" fill="#fff"/><circle cx="256" cy="239" r="17" fill="#fff"/><circle cx="306" cy="239" r="17" fill="#fff"/></svg></span>
+      <div class="splash-name">NovaCHAT</div>
+    </div>
+
+    <!-- 註冊 / 登入 -->
+    <div class="auth" id="auth" hidden>
+      <div class="auth-box">
+        <span class="auth-logo"><svg viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="114" fill="#06C755"/><path fill="#fff" d="M256 116c-84.6 0-153.2 55.3-153.2 123.5 0 39.4 22.9 74.5 58.7 97.3l-13.8 49.6c-2.4 8.6 7 15.7 14.6 11.1l63-38.3c9.8 1.8 20.1 2.8 30.7 2.8 84.6 0 153.2-55.3 153.2-123.5S340.6 116 256 116z"/><circle cx="206" cy="239" r="17" fill="#06C755"/><circle cx="256" cy="239" r="17" fill="#06C755"/><circle cx="306" cy="239" r="17" fill="#06C755"/></svg></span>
+        <h1 class="auth-title">NovaCHAT</h1>
+        <form class="auth-form" id="loginForm" autocomplete="on">
+          <input id="loginAcct" type="text" placeholder="帳號" autocomplete="username" required>
+          <input id="loginPw" type="password" placeholder="密碼" autocomplete="current-password" required>
+          <button type="submit" class="auth-btn" id="loginBtn">登入</button>
+          <p class="auth-switch">還沒有帳號？<a id="toRegister">註冊</a></p>
+        </form>
+        <form class="auth-form" id="registerForm" autocomplete="on" hidden>
+          <input id="regAcct" type="text" placeholder="帳號" autocomplete="username" required>
+          <input id="regPw" type="password" placeholder="密碼（至少 4 位）" autocomplete="new-password" required>
+          <input id="regPw2" type="password" placeholder="確認密碼" autocomplete="new-password" required>
+          <button type="submit" class="auth-btn" id="registerBtn">註冊</button>
+          <p class="auth-switch">已經有帳號？<a id="toLogin">登入</a></p>
+        </form>
+      </div>
+    </div>
 
     <section class="screen" id="screenChat">
     <button class="compose-btn" id="composeBtn" aria-label="新增好友或群組"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
@@ -641,6 +694,50 @@
     shortsOnShow=(v)=>{ visible=v; if(!v){ shortsEl.querySelectorAll('video').forEach(x=>x.pause()); shortsEl.querySelectorAll('.short.is-playing').forEach(c=>c.classList.remove('is-playing')); return; } play(cur||shortsEl.querySelector('.short')); };
   }
 
+  // ===== 通知（本機）：真・遠端推播需後端 VAPID；此處做權限 + 本機通知 =====
+  function notify(title, body){
+    if(!('Notification' in window)){ toast('此瀏覽器不支援通知'); return; }
+    const show=()=>{ try{ if(navigator.serviceWorker && navigator.serviceWorker.ready){ navigator.serviceWorker.ready.then(reg=>reg.showNotification(title,{ body, icon:'assets/icon.svg', badge:'assets/icon.svg', tag:'novachat' })).catch(()=>{ try{ new Notification(title,{body,icon:'assets/icon.svg'}); }catch(e){} }); } else { new Notification(title,{body,icon:'assets/icon.svg'}); } }catch(e){} };
+    if(Notification.permission==='granted') show();
+    else if(Notification.permission!=='denied') Notification.requestPermission().then(p=>{ if(p==='granted') show(); else toast('已拒絕通知權限'); });
+    else toast('通知已被封鎖，請到瀏覽器設定開啟');
+  }
+  function askNotify(){ if(!('Notification' in window) || Notification.permission!=='default') return;
+    setTimeout(()=>Notification.requestPermission().then(p=>{ if(p==='granted') notify('NovaCHAT','通知已開啟 🔔'); }), 900); }
+
+  // 示範「真實收到訊息通知」：傳訊息後對方自動回覆一句（本機模擬），不在該對話或 app 在背景就發通知
+  const REPLIES=['收到！','好喔 👍','哈哈','我看看','等等回你','了解～','OK 沒問題','😂'];
+  function scheduleReply(id){ const c=Store.get(id); if(!c || c.type!=='dm') return;
+    setTimeout(()=>{ const chat=Store.get(id); if(!chat) return; const text=REPLIES[Math.floor(Math.random()*REPLIES.length)]; const now=new Date();
+      chat.msgs.push({ from:chat.name, text, t:fmtWhen(now) }); chat.time=fmtTime(now);
+      if(State.openId===id){ chat.unread=0; $('#msgs').insertAdjacentHTML('beforeend', msgHTML(chat.msgs[chat.msgs.length-1], chat)); $('#msgs').scrollTop=$('#msgs').scrollHeight; }
+      else chat.unread=(chat.unread||0)+1;
+      Store._save(); renderList();
+      if(State.openId!==id || document.hidden) notify(chat.name, text);
+    }, 1400 + Math.random()*700); }
+
+  // ===== 載入畫面 + 註冊 / 登入 =====
+  function setupAuth(){
+    const splash=document.getElementById('splash'), auth=document.getElementById('auth');
+    const sha=async(s)=>{ try{ const b=await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join(''); }catch{ return 'x'+s; } };
+    const getUsers=()=>{ try{ return JSON.parse(localStorage.getItem('nc.users')||'{}'); }catch{ return {}; } };
+    const setUsers=(u)=>{ try{ localStorage.setItem('nc.users', JSON.stringify(u)); }catch{} };
+    const loggedIn=()=>{ try{ return localStorage.getItem('nc.user'); }catch{ return null; } };
+    const enterApp=()=>{ auth.hidden=true; askNotify(); };
+    document.getElementById('toRegister').addEventListener('click',()=>{ document.getElementById('loginForm').hidden=true; document.getElementById('registerForm').hidden=false; });
+    document.getElementById('toLogin').addEventListener('click',()=>{ document.getElementById('registerForm').hidden=true; document.getElementById('loginForm').hidden=false; });
+    document.getElementById('loginForm').addEventListener('submit', async(e)=>{ e.preventDefault();
+      const a=document.getElementById('loginAcct').value.trim(), p=document.getElementById('loginPw').value;
+      if(!a||!p) return; const users=getUsers(); if(!users[a]){ toast('帳號不存在'); return; } if(users[a]!==await sha(p)){ toast('密碼錯誤'); return; }
+      localStorage.setItem('nc.user', a); toast('歡迎回來，'+a); enterApp(); });
+    document.getElementById('registerForm').addEventListener('submit', async(e)=>{ e.preventDefault();
+      const a=document.getElementById('regAcct').value.trim(), p=document.getElementById('regPw').value, p2=document.getElementById('regPw2').value;
+      if(!a||!p) return; if(p.length<4){ toast('密碼至少 4 位'); return; } if(p!==p2){ toast('兩次密碼不一致'); return; }
+      const users=getUsers(); if(users[a]){ toast('帳號已存在'); return; } users[a]=await sha(p); setUsers(users); localStorage.setItem('nc.user', a); toast('註冊成功！'); enterApp(); });
+    // 圖標 splash 顯示一下就淡出；未登入 → 顯示登入
+    setTimeout(()=>{ splash.classList.add('is-hiding'); setTimeout(()=>{ splash.hidden=true; if(!loggedIn()) auth.hidden=false; else askNotify(); }, 420); }, 1100);
+  }
+
   function bind(){
     const inp=$('#searchInput');
     inp.addEventListener('input',()=>{ State.query=inp.value; renderList(); });
@@ -698,9 +795,9 @@
     ta.addEventListener('keydown',(e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); $('#composer').requestSubmit(); } });
     $('#composer').addEventListener('submit',(e)=>{
       e.preventDefault(); const text=ta.value.trim(); if(!text||!State.openId) return;
-      const c=Store.get(State.openId); Store.send(State.openId,text);
+      const c=Store.get(State.openId); const id=State.openId; Store.send(id,text);
       $('#msgs').insertAdjacentHTML('beforeend',msgHTML(c.msgs[c.msgs.length-1],c));
-      ta.value=''; refresh(); $('#msgs').scrollTop=$('#msgs').scrollHeight;
+      ta.value=''; refresh(); $('#msgs').scrollTop=$('#msgs').scrollHeight; scheduleReply(id);
     });
     // ===== 底部彈出選單 / 輸入框 通用 =====
     const openSheet=(id)=>{ const s=$('#'+id); if(s){ s.classList.add('open'); s.setAttribute('aria-hidden','false'); } };
@@ -725,13 +822,16 @@
     $('#stickerGrid').innerHTML=STICKERS.map(s=>`<button type="button">${s}</button>`).join('');
     $('.composer .plus').addEventListener('click',()=>openSheet('stickerSheet'));
     $('#stickerGrid').addEventListener('click',(e)=>{ const b=e.target.closest('button'); if(!b||!State.openId) return;
-      const c=Store.get(State.openId); Store.send(State.openId, b.textContent);
+      const c=Store.get(State.openId); const id=State.openId; Store.send(id, b.textContent);
       $('#msgs').insertAdjacentHTML('beforeend', msgHTML(c.msgs[c.msgs.length-1], c));
-      $('#msgs').scrollTop=$('#msgs').scrollHeight; closeSheet('stickerSheet'); });
+      $('#msgs').scrollTop=$('#msgs').scrollHeight; closeSheet('stickerSheet'); scheduleReply(id); });
 
     // ===== 我的 =====
-    $('#logoutBtn').addEventListener('click',()=>toast('已退出登入（示範）'));
-    document.querySelectorAll('.me-row').forEach(b=>b.addEventListener('click',()=>toast(b.querySelector('span').textContent+'（下一階段）')));
+    $('#logoutBtn').addEventListener('click',()=>{ try{ localStorage.removeItem('nc.user'); }catch(e){} toast('已退出登入'); setTimeout(()=>location.reload(), 600); });
+    document.querySelectorAll('.me-row').forEach(b=>b.addEventListener('click',()=>{
+      if(b.dataset.me==='notify') notify('NovaCHAT','這是一則測試通知 🔔');
+      else if(b.dataset.me==='bg') toast('聊天背景：進入對話後點右上角 🖼️');
+      else toast(b.querySelector('span').textContent+'（下一階段）'); }));
 
     // ===== VIDEO 控制 =====
     document.querySelectorAll('.vbtn').forEach(b=>b.addEventListener('click',()=>{
@@ -876,7 +976,7 @@
     vv.addEventListener('scroll', schedule);
   })();
 
-  (async function init(){ bind(); setupShorts(); applyBg(getBg()); await Store.fetchChats(); renderList();
+  (async function init(){ bind(); setupShorts(); setupAuth(); applyBg(getBg()); await Store.fetchChats(); renderList();
     if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{}); })();
   </script>
 </body>
