@@ -110,12 +110,14 @@
     /* 靜止時的灰色膠囊（照 Group：transform 移動 + 彈性曲線） */
     .tab-pill { position: absolute; top: 5px; left: 0; height: 52px; width: 0; background: var(--nc-bar-active); border-radius: 999px; z-index: 0; pointer-events: none; transform: translateX(0); transition: transform .45s cubic-bezier(.34,1.56,.64,1), opacity .28s ease; }
     .tabbar-inner.is-dragging .tab-pill { opacity: 0; }
+    /* 拖動時：真實 tab 一律不藍（含原本選中的），藍色只由玻璃鏡片呈現；放手後鏡片淡出、目標 tab 才淡入藍色 */
+    .tabbar-inner.is-dragging .tab { color: #000; }
     /* 滑動時的真・液態玻璃鏡片（移植 Group：createGlass content 模式折射 canvas 複本；iOS 也能折射） */
-    .tab-lens { position: fixed; left: 0; top: 0; width: var(--lens-w, 84px); height: 72px; border-radius: 36px; z-index: 7; pointer-events: none; opacity: 0; scale: .6; visibility: hidden; transition: opacity .28s ease, scale .32s cubic-bezier(.4,0,.2,1), visibility 0s linear .32s; will-change: translate, scale, opacity; }
+    .tab-lens { position: fixed; left: 0; top: 0; width: var(--lens-w, 84px); height: 72px; border-radius: 36px; z-index: 7; pointer-events: none; opacity: 0; scale: .7; visibility: hidden; transform-origin: center; transition: opacity .18s ease, scale .24s cubic-bezier(.4,0,.2,1), visibility 0s linear .24s; will-change: translate, scale, opacity; }
     .tab-lens__glass { position: absolute; inset: 0; border-radius: inherit; background: rgba(255,255,255,0.04); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.7), inset 0 2px 2px rgba(255,255,255,0.75), inset 0 -2px 2px rgba(255,255,255,0.35); }
     .tab-lens.is-on { opacity: 1; scale: 1; visibility: visible; transition: opacity .16s ease, scale .45s cubic-bezier(.34,1.56,.64,1), visibility 0s; }
     .tab-lens__canvas { position: absolute; left: 0; top: 0; width: 100%; height: 100%; display: block; }
-    .tab { flex: 1; z-index: 1; height: 52px; border: 0; background: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border-radius: 999px; color: #000; font-family: var(--sf); position: relative; }
+    .tab { flex: 1; z-index: 1; height: 52px; border: 0; background: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border-radius: 999px; color: #000; font-family: var(--sf); position: relative; transition: color .2s ease; }
     .tab .ico { width: 26px; height: 26px; display: grid; place-items: center; }
     .tab .ico svg { width: 24px; height: 24px; fill: currentColor; }
     .tab .lbl { font-size: 10px; line-height: 1; font-weight: 500; white-space: nowrap; }
@@ -148,7 +150,8 @@
     /* 半透明毛玻璃：讓聊天背景透到底部、真正全螢幕 */
     /* 底部透明：照片透到最下（無白底、無分隔線）*/
     /* 鍵盤：只有訊息筐升起（margin-bottom = 鍵盤高度），背景容器 .convo 完全不縮 → 聊天背景相片不會變窄、不會閃 */
-    .composer { flex: 0 0 auto; display: flex; align-items: flex-end; gap: 8px; padding: 8px 12px calc(10px + env(safe-area-inset-bottom)); border-top: 0; background: transparent; margin-bottom: var(--kb, 0px); transition: margin-bottom .2s ease-out; }
+    /* 鍵盤：只有輸入框往上（transform 上移鍵盤高度），訊息列表與背景都不跟著動 */
+    .composer { flex: 0 0 auto; display: flex; align-items: flex-end; gap: 8px; padding: 8px 12px calc(10px + env(safe-area-inset-bottom)); border-top: 0; background: transparent; transform: translateY(calc(-1 * var(--kb, 0px))); transition: transform .2s ease-out; }
     .composer .plus { border: 0; background: none; color: #000; cursor: pointer; width: 34px; height: 34px; flex: 0 0 auto; display: grid; place-items: center; }
     .composer .plus svg { width: 26px; height: 26px; }
     .composer .field { flex: 1; min-width: 0; display: flex; align-items: center; background: var(--nc-fill-secondary); border-radius: 20px; padding: 7px 14px; }
@@ -550,10 +553,7 @@
       raf = 0;
       const kb = Math.max(0, Math.round(window.innerHeight - vv.height));   // 鍵盤高度
       root.style.setProperty('--kb', kb + 'px');
-      if(kb > 0){
-        if(window.scrollY) window.scrollTo(0, 0);                 // 防止 iOS 把整頁上捲（頂欄留原位）
-        if(State.openId){ const m = document.getElementById('msgs'); if(m) m.scrollTop = m.scrollHeight; }
-      }
+      if(kb > 0 && window.scrollY) window.scrollTo(0, 0);         // 防止 iOS 把整頁上捲（只有輸入框動，其他不動）
     }
     const schedule = ()=>{ if(!raf) raf = requestAnimationFrame(apply); };
     vv.addEventListener('resize', schedule);
