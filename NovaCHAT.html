@@ -147,6 +147,9 @@
     .bubble .who { font-size: 12px; font-weight: 600; color: var(--nc-blue); margin-bottom: 2px; }
     .bubble .mt { font-size: 10px; opacity: .6; margin-left: 8px; float: right; margin-top: 6px; }
     .bubble.me .mt { color: #000; }
+    /* 我傳訊息的已讀 / 未讀狀態（靠右、小字） */
+    .rr { align-self: flex-end; font-size: 10px; color: var(--nc-text-2); margin: 1px 4px 2px 0; line-height: 1; }
+    .rr.read { color: var(--nc-blue); }
     /* 半透明毛玻璃：讓聊天背景透到底部、真正全螢幕 */
     /* 底部透明：照片透到最下（無白底、無分隔線）*/
     /* 鍵盤：只有訊息筐升起（margin-bottom = 鍵盤高度），背景容器 .convo 完全不縮 → 聊天背景相片不會變窄、不會閃 */
@@ -337,7 +340,10 @@
   function msgHTML(m, c){
     const mine=m.from==='me';
     const who=(!mine && c.type==='group')?`<span class="who">${esc(m.from)}</span>`:'';
-    return `<div class="bubble ${mine?'me':'them'}">${who}${esc(m.text)}<span class="mt">${esc(m.t)}</span></div>`;
+    const bubble=`<div class="bubble ${mine?'me':'them'}">${who}${esc(m.text)}<span class="mt">${esc(m.t)}</span></div>`;
+    // 我傳的訊息：底部顯示已讀 / 未讀
+    if(mine){ const read=m.status==='read'; return bubble+`<div class="rr${read?' read':''}">${read?'已讀':'未讀'}</div>`; }
+    return bubble;
   }
   function openConvo(id){
     const c=Store.get(id); if(!c) return;
