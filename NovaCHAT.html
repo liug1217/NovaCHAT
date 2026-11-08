@@ -51,8 +51,8 @@
 
     /* 頂部 */
     /* 位置照 Figma：左右各 10px、搜尋框高 40px、下方 20px（闊度仍跟螢幕）
-       上方只留安全區（瀏海／動態島）+ 4px → 搜尋欄在安全區下緣剛好貼頂，不會頂穿安全區 */
-    .topbar { flex: 0 0 auto; padding: calc(env(safe-area-inset-top, 0px) + 4px) 10px 0; }
+       上方只留安全區（瀏海／動態島），無額外空隙 → 搜尋欄緊貼安全區下緣，不頂穿安全區 */
+    .topbar { flex: 0 0 auto; padding: env(safe-area-inset-top, 0px) 10px 0; }
     .search { width: 100%; height: 40px; display: flex; align-items: center; gap: 8px; padding: 0 11px; background: var(--nc-fill-secondary); border-radius: 100px; }
     .search .mag { width: 21px; height: 22px; flex: 0 0 auto; color: var(--nc-label-secondary); display: grid; place-items: center; }
     .search .mag svg { width: 16px; height: 16px; }
