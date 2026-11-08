@@ -106,9 +106,9 @@
       border: 0; border-radius: 1000px;
       box-shadow: inset 0 1px 0 rgba(255,255,255,0.45), 0 8px 15px rgba(0,0,0,0.12); }
     /* 分頁層：鏡片滑過時用 clip-path 在這一層挖洞（底欄玻璃保持完整，不會透出背景） */
-    .tab-row { position: absolute; inset: 0; display: flex; align-items: center; padding: 0 4px; }
+    .tab-row { position: absolute; inset: 0; display: flex; align-items: center; padding: 0 10px; }
     /* 小膠囊（選取底色）：照 Group.html（top 4、高 54、radius 27、深灰 12%） */
-    .tab-pill { position: absolute; top: 4px; left: 0; height: 54px; width: 0; background: rgba(0,0,0,0.12); border-radius: 27px; z-index: 0; pointer-events: none; transform: translateX(0); transition: transform .45s cubic-bezier(.34,1.56,.64,1), opacity .28s ease; }
+    .tab-pill { position: absolute; top: 4px; left: 4px; height: 54px; width: calc((100% - 20px)/5 + 12.4px); background: rgba(0,0,0,0.12); border-radius: 27px; z-index: 0; pointer-events: none; transform: translateX(0); transition: transform .45s cubic-bezier(.34,1.56,.64,1), opacity .28s ease; }
     .tabbar-inner.is-dragging .tab-pill { opacity: 0; }
     /* 拖動時：真實 tab 一律不藍（含原本選中的），藍色只由玻璃鏡片呈現；放手後鏡片淡出、目標 tab 才淡入藍色 */
     .tabbar-inner.is-dragging .tab { color: #000; }
@@ -709,11 +709,11 @@
     // ===== 底部 tab bar：點擊/拖動；拖動時真・液態玻璃鏡片（移植 Group.html 的 createGlass 鏡片）=====
     const tabbar=$('#tabbar'), tabRow=$('#tabRow'), pill=$('#tabPill');
     const tabs=()=>[...tabbar.querySelectorAll('.tab')];
-    const TAB_PAD=4;
+    const TAB_PAD=10;
     const PILL='transform .45s cubic-bezier(.34,1.56,.64,1), opacity .28s ease';
     function placePill(t, instant){ if(!t) return; pill.style.transition = instant ? 'none' : PILL;
-      const w=t.offsetWidth+12; let x=t.offsetLeft-6; x=Math.max(2, Math.min(x, tabbar.clientWidth-w-2));   // 照 Group：膠囊比分頁闊、略為重疊
-      pill.style.width=w+'px'; pill.style.transform='translateX('+x+'px)';
+      const i=tabs().indexOf(t); const slot=(tabbar.clientWidth - TAB_PAD*2)/tabs().length;   // 照 Group：--pill-x = index × slot，闊度由 CSS calc
+      pill.style.transform='translateX('+(i*slot)+'px)';
       if(instant) requestAnimationFrame(()=>{ pill.style.transition=PILL; }); }
     function selectTab(t, silent){ if(!t) return;
       tabs().forEach(x=>{ const on=x===t; x.classList.toggle('active',on); on?x.setAttribute('aria-current','page'):x.removeAttribute('aria-current'); });
