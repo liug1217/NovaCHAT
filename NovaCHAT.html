@@ -194,16 +194,36 @@
     .home-card b { font-size: 17px; }
     .home-card span { font-size: 14px; color: var(--nc-text-2); }
     .home-card.muted { color: var(--nc-text-2); font-size: 14px; align-items: center; }
-    /* VIDEO */
-    .screen-video { background: #111; color: #fff; }
-    .vid-stage { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding-top: env(safe-area-inset-top,0px); }
-    .vid-ava { width: 96px; height: 96px; border-radius: 50%; background: var(--nc-blue); display: grid; place-items: center; font-size: 36px; font-weight: 600; }
-    .vid-name { font-size: 22px; font-weight: 600; }
-    .vid-sub { font-size: 14px; color: rgba(255,255,255,.6); }
-    .vid-controls { display: flex; justify-content: center; gap: 28px; padding: 0 0 calc(110px + env(safe-area-inset-bottom)); }
-    .vbtn { width: 60px; height: 60px; border: 0; border-radius: 50%; background: rgba(255,255,255,.18); color: #fff; cursor: pointer; display: grid; place-items: center; }
-    .vbtn svg { width: 26px; height: 26px; }
-    .vbtn.end { background: #ff3b30; }
+    /* VIDEO：短影音 feed（照抄 Group.html：直向 scroll-snap、自動播放、愛心 / 分享 / 轉盤） */
+    .screen-video { position: relative; background: #000; }
+    .shorts { position: absolute; inset: 0; overflow-y: auto; scroll-snap-type: y mandatory; overscroll-behavior: contain; scrollbar-width: none; }
+    .shorts::-webkit-scrollbar { display: none; }
+    .short { position: relative; height: 100%; overflow: hidden; background: #000; scroll-snap-align: start; scroll-snap-stop: always; }
+    .short video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #000; }
+    .short::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, rgba(0,0,0,.45) 0%, rgba(0,0,0,0) 22%, rgba(0,0,0,0) 55%, rgba(0,0,0,.6) 100%); }
+    .short-side { position: absolute; right: 10px; bottom: 120px; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 18px; }
+    .short-avatar { width: 46px; height: 46px; border-radius: 50%; border: 2px solid #fff; display: grid; place-items: center; color: #fff; font-weight: 600; font-size: 18px; }
+    .short-btn { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 0; border: 0; background: transparent; color: #fff; font: inherit; font-size: 12px; font-weight: 600; text-shadow: 0 1px 2px rgba(0,0,0,.6); cursor: pointer; }
+    .short-btn svg { width: 34px; height: 34px; filter: drop-shadow(0 1px 2px rgba(0,0,0,.5)); }
+    .short-like.is-liked svg { color: #fe2c55; animation: like-pop .4s cubic-bezier(.34,1.56,.64,1); }
+    @keyframes like-pop { 0%{transform:scale(.6)} 60%{transform:scale(1.25)} 100%{transform:scale(1)} }
+    .short-disc { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-size: 16px; background: radial-gradient(circle,#333 0 30%,#111 31% 100%); animation: disc-spin 4s linear infinite; animation-play-state: paused; }
+    .short.is-playing .short-disc { animation-play-state: running; }
+    @keyframes disc-spin { to { transform: rotate(360deg); } }
+    .short-info { position: absolute; left: 14px; right: 80px; bottom: 112px; z-index: 2; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.6); }
+    .short-user { font-size: 16px; font-weight: 700; }
+    .short-caption { margin-top: 6px; font-size: 14px; line-height: 19px; }
+    .short-music { margin-top: 8px; overflow: hidden; white-space: nowrap; font-size: 13px; }
+    .short-music span { display: inline-block; padding-left: 100%; animation: music-scroll 9s linear infinite; }
+    @keyframes music-scroll { to { transform: translateX(-100%); } }
+    .short-source { margin-top: 4px; font-size: 11px; color: rgba(255,255,255,.7); }
+    .short-progress { position: absolute; left: 0; right: 0; bottom: 100px; z-index: 2; height: 2px; background: rgba(255,255,255,.2); }
+    .short-progress i { display: block; width: 100%; height: 100%; background: rgba(255,255,255,.85); transform-origin: left; transform: scaleX(0); }
+    .short-heart { position: absolute; z-index: 3; width: 90px; height: 90px; margin: -45px 0 0 -45px; color: #fe2c55; pointer-events: none; animation: big-heart .8s ease-out forwards; }
+    .short-heart svg { width: 100%; height: 100%; }
+    @keyframes big-heart { 0%{opacity:0;transform:scale(.4) rotate(-12deg)} 20%{opacity:1;transform:scale(1.15) rotate(-12deg)} 45%{transform:scale(.95) rotate(-12deg)} 100%{opacity:0;transform:translateY(-60px) scale(1.1) rotate(-12deg)} }
+    .shorts-toast { position: absolute; left: 50%; top: 45%; z-index: 4; padding: 8px 14px; border-radius: 18px; background: rgba(0,0,0,.6); color: #fff; font-size: 14px; transform: translate(-50%,-50%); opacity: 0; transition: opacity .2s ease; pointer-events: none; white-space: nowrap; }
+    .shorts-toast.is-on { opacity: 1; }
     /* 我的 */
     .me-body { flex: 1; min-height: 0; overflow-y: auto; padding: 4px 16px 96px; }
     .me-head { display: flex; align-items: center; gap: 14px; padding: 12px 4px 20px; }
@@ -296,16 +316,8 @@
 
     <!-- VIDEO -->
     <section class="screen screen-video" id="screenVideo" hidden>
-      <div class="vid-stage">
-        <span class="vid-ava">N</span>
-        <div class="vid-name">NovaCHAT 視訊</div>
-        <div class="vid-sub">示範畫面 · 00:00</div>
-      </div>
-      <div class="vid-controls">
-        <button class="vbtn" data-v="mute" aria-label="靜音"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 18v3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
-        <button class="vbtn end" data-v="end" aria-label="結束通話"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 9c-2.4 0-4.7.4-6.8 1.2-.5.2-.9.7-.9 1.3v2c0 .4.2.8.5 1 .7.5 1.5.9 2.3 1.2.4.1.9 0 1.1-.4l1-1.6c.2-.3.1-.7-.1-.9-.2-.2-.3-.5-.3-.8 1.1-.3 2.2-.4 3.2-.4s2.1.1 3.2.4c0 .3-.1.6-.3.8-.2.2-.3.6-.1.9l1 1.6c.2.4.7.5 1.1.4.8-.3 1.6-.7 2.3-1.2.3-.2.5-.6.5-1v-2c0-.6-.4-1.1-.9-1.3C16.7 9.4 14.4 9 12 9z"/></svg></button>
-        <button class="vbtn" data-v="cam" aria-label="鏡頭"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></button>
-      </div>
+      <div class="shorts" id="shorts" aria-label="短影音"></div>
+      <div class="shorts-toast" id="shortsToast" aria-live="polite"></div>
     </section>
 
     <!-- 我的 -->
@@ -555,9 +567,72 @@
 
   // 畫面切換（主頁 / 聊天 / VIDEO / 我的）
   const SCREENS={ home:'screenHome', chat:'screenChat', video:'screenVideo', me:'screenMe' };
+  let shortsOnShow=()=>{};
+  const el2=(tag,cls,text)=>{ const e=document.createElement(tag); if(cls) e.className=cls; if(text!=null) e.textContent=text; return e; };
   function showScreen(tab){ const id=SCREENS[tab];
     if(!id){ if(tab==='seal') toast('關閉（示範）'); return; }   // ❌ 分頁：保持現有畫面
-    Object.values(SCREENS).forEach(s=>{ const el=document.getElementById(s); if(el) el.hidden=(s!==id); }); }
+    Object.values(SCREENS).forEach(s=>{ const node=document.getElementById(s); if(node) node.hidden=(s!==id); });
+    shortsOnShow(tab==='video'); }
+
+  // VIDEO：短影音 feed（移植 Group.html）
+  function setupShorts(){
+    const SV={ bunny:{src:'https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_10s_2MB.mp4',music:'原聲 - Big Buck Bunny',source:'影片：Big Buck Bunny © Blender Foundation（CC BY 3.0）'},
+      sintel:{src:'https://test-videos.co.uk/vids/sintel/mp4/h264/720/Sintel_720_10s_2MB.mp4',music:'原聲 - Sintel',source:'影片：Sintel © Blender Foundation（CC BY 3.0）'},
+      jellyfish:{src:'https://test-videos.co.uk/vids/jellyfish/mp4/h264/720/Jellyfish_720_10s_2MB.mp4',music:'原聲 - Jellyfish',source:'影片：Jellyfish 測試影片（test-videos.co.uk）'},
+      flower:{src:'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',music:'原聲 - Flower',source:'影片：MDN 範例影片（CC0）'},
+      friday:{src:'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4',music:'原聲 - Friday',source:'影片：MDN 範例影片（CC0）'} };
+    const MEM={ fan:{name:'小帆',color:'#ff7a59'}, zhang:{name:'阿哲',color:'#5b6cff'}, si:{name:'思思',color:'#37b6d6'}, liu:{name:'阿柳',color:'#34c759'} };
+    const SHORTS=[ {id:'s1',video:'bunny',by:'fan',caption:'週末團戰前先來點可愛的 🐰',likes:128},
+      {id:'s2',video:'sintel',by:'zhang',caption:'這個畫面太帥了吧 #動畫',likes:342},
+      {id:'s3',video:'jellyfish',by:'si',caption:'看水母放鬆一下～',likes:89},
+      {id:'s4',video:'flower',by:'liu',caption:'花開了 🌸',likes:56},
+      {id:'s5',video:'friday',by:'fan',caption:'星期五了！今晚上線 #Roblox',likes:211},
+      {id:'s6',video:'sintel',by:'si',caption:'有人看過這部嗎？',likes:97},
+      {id:'s7',video:'bunny',by:'zhang',caption:'這隻兔子好像我們團長 😂',likes:430},
+      {id:'s8',video:'jellyfish',by:'liu',caption:'深海 ASMR #放鬆',likes:64},
+      {id:'s9',video:'friday',by:'si',caption:'週五晚上的心情',likes:73},
+      {id:'s10',video:'flower',by:'zhang',caption:'慢動作好療癒',likes:118} ];
+    const sget=(k,d)=>{ try{ const v=localStorage.getItem('nc.'+k); return v==null?d:JSON.parse(v); }catch{ return d; } };
+    const sset=(k,v)=>{ try{ localStorage.setItem('nc.'+k, JSON.stringify(v)); }catch{} };
+    const shortsEl=document.getElementById('shorts'), toastEl=document.getElementById('shortsToast');
+    if(!shortsEl) return;
+    const liked=new Set(sget('shortsLiked',[])); let muted=true, visible=false, cur=null;
+    const HEART='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35 10.55 20C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>';
+    const SHARE='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 4.5v3.6C6.6 8.9 3.7 13.3 3 18.5c2.3-3.4 5.5-4.9 10-4.9v3.7l7.5-6.4L13 4.5z"/></svg>';
+    let tt=0; const say=(t)=>{ toastEl.textContent=t; toastEl.classList.add('is-on'); clearTimeout(tt); tt=setTimeout(()=>toastEl.classList.remove('is-on'),900); };
+    const cnt=(it)=>it.likes+(liked.has(it.id)?1:0);
+    const setLiked=(it,card,on)=>{ on?liked.add(it.id):liked.delete(it.id); sset('shortsLiked',[...liked]);
+      const b=card.querySelector('.short-like'); b.classList.toggle('is-liked',on); b.querySelector('span').textContent=cnt(it); if(on&&navigator.vibrate) navigator.vibrate(10); };
+    const bigHeart=(card,x,y)=>{ const h=el2('div','short-heart'); h.innerHTML=HEART; const r=card.getBoundingClientRect(); h.style.left=(x-r.left)+'px'; h.style.top=(y-r.top)+'px'; card.append(h); h.addEventListener('animationend',()=>h.remove()); };
+    const share=async(it)=>{ const url=location.origin+location.pathname+'#short-'+it.id, m=MEM[it.by];
+      try{ if(navigator.share){ await navigator.share({title:'NovaCHAT 短影音',text:(m?m.name:'')+'：'+it.caption,url}); return; } await navigator.clipboard.writeText(url); say('已複製連結'); }catch{} };
+    const cards=SHORTS.map(it=>{ const info=SV[it.video], m=MEM[it.by]||{name:'成員',color:'#8e8e93'};
+      const card=el2('article','short'); card.id='short-'+it.id;
+      const video=el2('video'); video.src=info.src; video.muted=true; video.loop=true; video.playsInline=true; video.setAttribute('playsinline',''); video.preload='metadata';
+      const progress=el2('div','short-progress'), bar=el2('i'); progress.append(bar);
+      video.addEventListener('timeupdate',()=>{ if(video.duration) bar.style.transform='scaleX('+(video.currentTime/video.duration)+')'; });
+      const side=el2('div','short-side');
+      const avatar=el2('span','short-avatar',m.name[0]); avatar.style.background=m.color;
+      const like=el2('button','short-btn short-like'); like.type='button'; like.innerHTML=HEART+'<span></span>'; like.querySelector('span').textContent=cnt(it); like.classList.toggle('is-liked',liked.has(it.id));
+      like.addEventListener('click',e=>{ e.stopPropagation(); setLiked(it,card,!liked.has(it.id)); });
+      const sh=el2('button','short-btn short-share'); sh.type='button'; sh.innerHTML=SHARE+'<span>分享</span>'; sh.addEventListener('click',e=>{ e.stopPropagation(); share(it); });
+      const disc=el2('div','short-disc','♫'); side.append(avatar,like,sh,disc);
+      const infoBox=el2('div','short-info');
+      infoBox.append(el2('div','short-user','@'+it.by), el2('div','short-caption',m.name+' 分享：'+it.caption));
+      const music=el2('div','short-music'); music.append(el2('span','','♫ '+info.music+'　　♫ '+info.music)); infoBox.append(music);
+      infoBox.append(el2('div','short-source',info.source));
+      card.append(video,progress,side,infoBox);
+      let lastTap=0, tap=0;
+      card.addEventListener('click',e=>{ const now=performance.now();
+        if(now-lastTap<300){ clearTimeout(tap); lastTap=0; if(!liked.has(it.id)) setLiked(it,card,true); bigHeart(card,e.clientX,e.clientY); return; }
+        lastTap=now; tap=setTimeout(()=>{ if(muted){ muted=false; video.muted=false; say('🔊 已開啟聲音'); } else if(video.paused){ video.play().catch(()=>{}); say('▶ 播放'); } else { video.pause(); say('❚❚ 暫停'); } },300); });
+      return card; });
+    shortsEl.replaceChildren(...cards);
+    const play=(card)=>{ if(cur&&cur!==card){ cur.querySelector('video').pause(); cur.classList.remove('is-playing'); } cur=card; if(!card||!visible) return; const v=card.querySelector('video'); v.muted=muted; v.play().then(()=>card.classList.add('is-playing')).catch(()=>{}); };
+    const obs=new IntersectionObserver(es=>es.forEach(en=>{ if(en.isIntersecting&&en.intersectionRatio>=0.6) play(en.target); }),{root:shortsEl,threshold:[0.6]});
+    cards.forEach(c=>obs.observe(c));
+    shortsOnShow=(v)=>{ visible=v; if(!v){ shortsEl.querySelectorAll('video').forEach(x=>x.pause()); shortsEl.querySelectorAll('.short.is-playing').forEach(c=>c.classList.remove('is-playing')); return; } play(cur||shortsEl.querySelector('.short')); };
+  }
 
   function bind(){
     const inp=$('#searchInput');
@@ -762,7 +837,7 @@
     vv.addEventListener('scroll', schedule);
   })();
 
-  (async function init(){ bind(); applyBg(getBg()); await Store.fetchChats(); renderList();
+  (async function init(){ bind(); setupShorts(); applyBg(getBg()); await Store.fetchChats(); renderList();
     if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{}); })();
   </script>
 </body>
