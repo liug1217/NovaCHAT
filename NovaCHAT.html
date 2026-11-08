@@ -107,7 +107,15 @@
       box-shadow: inset 0 1px 0.5px rgba(255,255,255,0.75), inset 0 0 0 0.5px rgba(255,255,255,0.4), inset 0 -1.5px 2px rgba(255,255,255,0.25), 0 8px 15px rgba(0,0,0,0.12);
       display: flex; align-items: center; padding: 0 4px; position: relative; touch-action: none; }
     /* 動畫參考 Group.html：改用 transform 移動 + 彈性曲線（樣式/顏色/大小不變，只改動畫） */
-    .tab-lens { position: absolute; top: 5px; height: 52px; left: 0; width: 0; background: var(--nc-bar-active); border-radius: 999px; z-index: 0; pointer-events: none; transform: translateX(0); transition: transform .45s cubic-bezier(.34,1.56,.64,1); will-change: transform; }
+    .tab-lens { position: absolute; top: 5px; height: 52px; left: 0; width: 0; background: var(--nc-bar-active); border-radius: 999px; z-index: 0; pointer-events: none; transform: translateX(0); transition: transform .45s cubic-bezier(.34,1.56,.64,1), opacity .25s ease; will-change: transform; }
+    /* 滑動時彈出的玻璃鏡片（參考 Group.html）：比膠囊大、很透明、放手彈走；底下 tab 變藍 */
+    .tab-glens { position: absolute; top: 50%; left: 0; width: 80px; height: 70px; translate: 0 -50%; scale: .55; border-radius: 999px; z-index: 0; pointer-events: none; opacity: 0; visibility: hidden;
+      background: rgba(255,255,255,0.1); backdrop-filter: blur(6px) saturate(180%); -webkit-backdrop-filter: blur(6px) saturate(180%);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.7), inset 0 2px 2px rgba(255,255,255,0.75), inset 0 -2px 2px rgba(255,255,255,0.35), 0 6px 16px rgba(0,0,0,0.14);
+      transition: opacity .22s ease, scale .32s cubic-bezier(.34,1.56,.64,1), visibility 0s linear .32s; will-change: translate, scale; }
+    .tabbar-inner.dragging .tab-glens { opacity: 1; scale: 1; visibility: visible; transition: opacity .16s ease, scale .42s cubic-bezier(.34,1.56,.64,1), visibility 0s; }
+    .tabbar-inner.dragging .tab-lens { opacity: 0; }
+    .tab.drag-hot { color: var(--nc-blue); }
     .tab { flex: 1; z-index: 1; height: 52px; border: 0; background: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border-radius: 999px; color: #000; font-family: var(--sf); position: relative; }
     .tab .ico { width: 26px; height: 26px; display: grid; place-items: center; }
     .tab .ico svg { width: 24px; height: 24px; fill: currentColor; }
@@ -197,6 +205,7 @@
     <nav class="tabbar" aria-label="主導覽">
       <div class="tabbar-inner" id="tabbar">
         <span class="tab-lens" id="tabLens" aria-hidden="true"></span>
+        <span class="tab-glens" id="tabGlens" aria-hidden="true"></span>
         <button class="tab" data-tab="home"><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 2.5l9.5 9.5L12 21.5 2.5 12 12 2.5z"/></svg></span><span class="lbl">主頁</span></button>
         <button class="tab active" data-tab="chat" aria-current="page"><span class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/></svg></span><span class="lbl">聊天</span></button>
         <button class="tab" data-tab="video"><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 3l9.5 16.5H2.5L12 3z"/></svg></span><span class="lbl">VIDEO</span></button>
@@ -416,34 +425,40 @@
     });
     $('.composer .plus').addEventListener('click',()=>toast('附件 / 圖片（下一階段）'));
 
-    // Tab Bar：膠囊可點、可左右拖動（動畫參考 Group.html：彈性位移 + 滑動彈簧跟隨；樣式/顏色不變）
-    const tabbar=$('#tabbar'), lens=$('#tabLens');
+    // Tab Bar：點擊切換；拖動時彈出玻璃鏡片跟手指（參考 Group.html），灰膠囊隱藏、底下 tab 變藍、放手彈去最近 tab
+    const tabbar=$('#tabbar'), lens=$('#tabLens'), glens=$('#tabGlens');
     const tabs=()=>[...tabbar.querySelectorAll('.tab')];
-    const SPRING='transform .45s cubic-bezier(.34,1.56,.64,1)';   // Group 的彈性曲線：切換時輕微過衝回彈
-    const moveLens=(t)=>{ if(!t) return; lens.style.transition=SPRING; lens.style.width=t.offsetWidth+'px'; lens.style.transform='translateX('+t.offsetLeft+'px)'; };
-    function selectTab(t, silent){ if(!t) return;
+    const SPRING='transform .45s cubic-bezier(.34,1.56,.64,1), opacity .25s ease';   // Group 的彈性曲線
+    const moveLens=(t, instant)=>{ if(!t) return; lens.style.transition = instant ? 'none' : SPRING; lens.style.width=t.offsetWidth+'px'; lens.style.transform='translateX('+t.offsetLeft+'px)'; if(instant) requestAnimationFrame(()=>{ lens.style.transition=SPRING; }); };
+    function selectTab(t, silent, instant){ if(!t) return;
       tabs().forEach(x=>{ const on=x===t; x.classList.toggle('active',on); on?x.setAttribute('aria-current','page'):x.removeAttribute('aria-current'); });
-      moveLens(t); if(!silent && t.dataset.tab!=='chat') toast(t.querySelector('.lbl').textContent+'（下一階段）'); }
+      moveLens(t, instant); if(!silent && t.dataset.tab!=='chat') toast(t.querySelector('.lbl').textContent+'（下一階段）'); }
     const tabAtX=(clientX)=>{ const r=tabbar.getBoundingClientRect(); const x=clientX-r.left;
       let best=tabs()[0], bd=Infinity; tabs().forEach(t=>{ const c=t.offsetLeft+t.offsetWidth/2; const d=Math.abs(c-x); if(d<bd){bd=d;best=t;} }); return best; };
-    // 滑動跟隨：手指只改目標，鏡片每一幀用彈簧往目標靠近（取代原本線性直接設位置）→ 跟 Group 一樣順滑
+    const setHot=(t)=>tabs().forEach(x=>x.classList.toggle('drag-hot', x===t));   // 鏡片底下的 tab 變藍
+    // 鏡片用彈簧跟手指：手指只改目標，每一幀往目標靠近 → 順滑不跳格
     let dragging=false, moved=false, raf=0, springX=0, springV=0, springTarget=0;
-    const curX=()=>{ const m=/translateX\(([-\d.]+)px\)/.exec(lens.style.transform); return m?parseFloat(m[1]):((document.querySelector('.tab.active')||tabs()[0]).offsetLeft); };
     function springStep(){ raf=0;
       springV=(springV+(springTarget-springX)*0.22)*0.72;        // 剛性 0.22 / 阻尼 0.72
-      springX+=springV; lens.style.transform='translateX('+springX+'px)';
+      springX+=springV; glens.style.translate=springX+'px -50%';
+      setHot(tabAtX(tabbar.getBoundingClientRect().left + springX + glens.offsetWidth/2));
       if(dragging || Math.abs(springTarget-springX)>0.3 || Math.abs(springV)>0.3) raf=requestAnimationFrame(springStep); }
-    tabbar.addEventListener('pointerdown',(e)=>{ if(!e.target.closest('.tab')) return; dragging=true; moved=false;
-      springX=curX(); springV=0; lens.style.transition='none'; try{ tabbar.setPointerCapture(e.pointerId); }catch{} });
+    tabbar.addEventListener('pointerdown',(e)=>{ const t=e.target.closest('.tab'); if(!t) return; dragging=true; moved=false;
+      const gw=t.offsetWidth+16; glens.style.width=gw+'px';     // 鏡片比 tab 寬 16px（照 Group）
+      const a=document.querySelector('.tab.active')||tabs()[0]; springX=a.offsetLeft+a.offsetWidth/2-gw/2; springV=0;
+      glens.style.translate=springX+'px -50%'; tabbar.classList.add('dragging'); setHot(a);
+      try{ tabbar.setPointerCapture(e.pointerId); }catch{} });
     tabbar.addEventListener('pointermove',(e)=>{ if(!dragging) return; moved=true;
-      const r=tabbar.getBoundingClientRect(); const w=lens.offsetWidth||tabs()[0].offsetWidth;
-      let left=e.clientX-r.left-w/2; left=Math.max(4, Math.min(left, tabbar.clientWidth-w-4));
+      const r=tabbar.getBoundingClientRect(); const w=glens.offsetWidth;
+      let left=e.clientX-r.left-w/2; left=Math.max(2, Math.min(left, tabbar.clientWidth-w-2));
       springTarget=left; if(!raf) raf=requestAnimationFrame(springStep); });
-    const endDrag=(e)=>{ if(!dragging) return; dragging=false; if(raf){ cancelAnimationFrame(raf); raf=0; } lens.style.transition=SPRING; selectTab(tabAtX(e.clientX), false); };
+    const endDrag=(e)=>{ if(!dragging) return; dragging=false; if(raf){ cancelAnimationFrame(raf); raf=0; }
+      tabbar.classList.remove('dragging'); setHot(null);
+      selectTab(moved ? tabAtX(e.clientX) : (e.target.closest('.tab')||document.querySelector('.tab.active')), false, true); };
     tabbar.addEventListener('pointerup',endDrag);
-    tabbar.addEventListener('pointercancel',()=>{ dragging=false; if(raf){ cancelAnimationFrame(raf); raf=0; } lens.style.transition=SPRING; selectTab(document.querySelector('.tab.active'), true); });
+    tabbar.addEventListener('pointercancel',()=>{ if(!dragging) return; dragging=false; if(raf){ cancelAnimationFrame(raf); raf=0; } tabbar.classList.remove('dragging'); setHot(null); selectTab(document.querySelector('.tab.active'), true, true); });
     tabbar.addEventListener('click',(e)=>{ if(moved){ e.preventDefault(); e.stopPropagation(); moved=false; return; } const t=e.target.closest('.tab'); if(t) selectTab(t,false); });
-    const relocate=()=>moveLens(document.querySelector('.tab.active'));
+    const relocate=()=>moveLens(document.querySelector('.tab.active'), true);
     requestAnimationFrame(relocate); window.addEventListener('resize',relocate);
     if(document.fonts&&document.fonts.ready) document.fonts.ready.then(relocate);
   }
