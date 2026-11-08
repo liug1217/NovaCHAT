@@ -182,6 +182,71 @@
     .bgopt.upload { display: grid; place-items: center; background: var(--nc-fill-secondary); color: var(--nc-label-secondary); }
     .bgopt.upload svg { width: 24px; height: 24px; }
 
+    /* ===== 畫面切換（主頁 / 聊天 / VIDEO / 我的）===== */
+    .screen { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+    .screen[hidden] { display: none; }
+    /* 新增好友/群組 的「＋」浮動按鈕（聊天頁右上） */
+    .compose-btn { position: absolute; top: calc(env(safe-area-inset-top,0px) + 2px); right: 12px; z-index: 5; width: 34px; height: 34px; border: 0; border-radius: 50%; background: var(--nc-fill-secondary); color: #000; display: grid; place-items: center; cursor: pointer; }
+    .compose-btn svg { width: 22px; height: 22px; }
+    /* 主頁 */
+    .home-body { flex: 1; min-height: 0; overflow-y: auto; padding: 8px 16px 96px; display: flex; flex-direction: column; gap: 12px; }
+    .home-card { background: var(--nc-fill-secondary); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 4px; }
+    .home-card b { font-size: 17px; }
+    .home-card span { font-size: 14px; color: var(--nc-text-2); }
+    .home-card.muted { color: var(--nc-text-2); font-size: 14px; align-items: center; }
+    /* VIDEO */
+    .screen-video { background: #111; color: #fff; }
+    .vid-stage { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding-top: env(safe-area-inset-top,0px); }
+    .vid-ava { width: 96px; height: 96px; border-radius: 50%; background: var(--nc-blue); display: grid; place-items: center; font-size: 36px; font-weight: 600; }
+    .vid-name { font-size: 22px; font-weight: 600; }
+    .vid-sub { font-size: 14px; color: rgba(255,255,255,.6); }
+    .vid-controls { display: flex; justify-content: center; gap: 28px; padding: 0 0 calc(110px + env(safe-area-inset-bottom)); }
+    .vbtn { width: 60px; height: 60px; border: 0; border-radius: 50%; background: rgba(255,255,255,.18); color: #fff; cursor: pointer; display: grid; place-items: center; }
+    .vbtn svg { width: 26px; height: 26px; }
+    .vbtn.end { background: #ff3b30; }
+    /* 我的 */
+    .me-body { flex: 1; min-height: 0; overflow-y: auto; padding: 4px 16px 96px; }
+    .me-head { display: flex; align-items: center; gap: 14px; padding: 12px 4px 20px; }
+    .me-ava { width: 64px; height: 64px; border-radius: 50%; background: var(--nc-blue); color: #fff; display: grid; place-items: center; font-size: 24px; font-weight: 600; flex: 0 0 auto; }
+    .me-info { display: flex; flex-direction: column; gap: 3px; }
+    .me-info b { font-size: 20px; }
+    .me-info span { font-size: 13px; color: var(--nc-text-2); }
+    .me-list { background: var(--nc-fill-secondary); border-radius: 14px; overflow: hidden; }
+    .me-row { width: 100%; border: 0; background: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; font-size: 16px; font-family: var(--sf); color: #000; }
+    .me-row + .me-row { border-top: 0.5px solid var(--nc-sep); }
+    .me-row:active { background: rgba(0,0,0,.04); }
+    .me-row .chev { color: var(--nc-text-2); font-size: 20px; }
+    .logout-btn { width: 100%; margin-top: 22px; border: 0; border-radius: 14px; background: var(--nc-fill-secondary); color: #ff3b30; font-size: 16px; font-weight: 600; font-family: var(--sf); padding: 14px; cursor: pointer; }
+    .logout-btn:active { background: rgba(255,59,48,.08); }
+    /* 底部彈出選單（新增 / 貼圖通用） */
+    .sheet { position: absolute; inset: 0; z-index: 35; display: none; }
+    .sheet.open { display: block; }
+    .sheet-mask { position: absolute; inset: 0; background: rgba(0,0,0,.35); opacity: 0; transition: opacity .25s; }
+    .sheet.open .sheet-mask { opacity: 1; }
+    .sheet-panel { position: absolute; left: 10px; right: 10px; bottom: calc(10px + env(safe-area-inset-bottom)); background: #fff; border-radius: 18px; padding: 8px; transform: translateY(120%); transition: transform .28s cubic-bezier(.4,0,.2,1); display: flex; flex-direction: column; gap: 8px; }
+    .sheet.open .sheet-panel { transform: translateY(0); }
+    .sheet-item { border: 0; background: var(--nc-fill-secondary); border-radius: 12px; padding: 14px 16px; text-align: left; cursor: pointer; font-family: var(--sf); display: flex; flex-direction: column; gap: 2px; }
+    .sheet-item b { font-size: 16px; color: #000; }
+    .sheet-item span { font-size: 13px; color: var(--nc-text-2); }
+    .sheet-item:active { background: var(--nc-bar-active); }
+    .sheet-cancel { border: 0; background: var(--nc-fill-secondary); border-radius: 12px; padding: 14px; font-size: 16px; font-weight: 600; color: var(--nc-blue); font-family: var(--sf); cursor: pointer; }
+    .sheet-grip { width: 40px; height: 4px; border-radius: 2px; background: rgba(0,0,0,.18); margin: 2px auto 8px; }
+    .sheet-title { text-align: center; font-size: 14px; color: var(--nc-text-2); margin-bottom: 8px; }
+    .sticker-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; max-height: 42vh; overflow-y: auto; padding: 2px; }
+    .sticker-grid button { aspect-ratio: 1; border: 0; border-radius: 14px; background: var(--nc-fill-secondary); font-size: 30px; cursor: pointer; display: grid; place-items: center; }
+    .sticker-grid button:active { transform: scale(.9); background: var(--nc-bar-active); }
+    /* 簡易輸入對話框 */
+    .prompt { position: absolute; inset: 0; z-index: 38; display: none; }
+    .prompt.open { display: grid; place-items: center; }
+    .prompt .sheet-mask { opacity: 0; transition: opacity .2s; }
+    .prompt.open .sheet-mask { opacity: 1; }
+    .prompt-box { position: relative; width: 78%; max-width: 300px; background: #fff; border-radius: 16px; padding: 18px 16px 12px; display: flex; flex-direction: column; gap: 12px; }
+    .prompt-box h4 { font-size: 17px; text-align: center; }
+    .prompt-box input { border: 0; background: var(--nc-fill-secondary); border-radius: 10px; padding: 11px 12px; font-size: 16px; font-family: var(--sf); outline: none; }
+    .prompt-btns { display: flex; gap: 8px; }
+    .prompt-btns button { flex: 1; border: 0; border-radius: 10px; padding: 11px; font-size: 16px; font-family: var(--sf); background: var(--nc-fill-secondary); color: #000; cursor: pointer; }
+    .prompt-btns button.pri { background: var(--nc-blue); color: #fff; font-weight: 600; }
+
     .toast { position: absolute; left: 50%; bottom: calc(100px + env(safe-area-inset-bottom)); transform: translate(-50%, 10px); opacity: 0; pointer-events: none; z-index: 40; background: rgba(0,0,0,.82); color: #fff; padding: 9px 16px; border-radius: 100px; font-size: 13px; transition: opacity .2s, transform .2s; white-space: nowrap; }
     .toast.show { opacity: 1; transform: translate(-50%, 0); }
   </style>
@@ -189,6 +254,8 @@
 <body>
   <main class="app" id="app" role="application" aria-label="NovaCHAT 聊天">
 
+    <section class="screen" id="screenChat">
+    <button class="compose-btn" id="composeBtn" aria-label="新增好友或群組"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
     <div class="topbar">
       <div class="search" role="search">
         <span class="mag" aria-hidden="true"><svg viewBox="0 0 17 17" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M0 6.62402C0 5.71094 0.17155 4.85596 0.514648 4.05908C0.857747 3.25667 1.33366 2.55111 1.94238 1.94238C2.55111 1.33366 3.25391 0.857747 4.05078 0.514648C4.85319 0.17155 5.71094 0 6.62402 0C7.53711 0 8.39209 0.17155 9.18896 0.514648C9.99137 0.857747 10.6969 1.33366 11.3057 1.94238C11.9144 2.55111 12.3903 3.25667 12.7334 4.05908C13.0765 4.85596 13.248 5.71094 13.248 6.62402C13.248 7.38216 13.1263 8.10156 12.8828 8.78223C12.6449 9.46289 12.3128 10.0799 11.8867 10.6333L15.9458 14.7173C16.0343 14.8058 16.1007 14.9082 16.145 15.0244C16.1948 15.1406 16.2197 15.2651 16.2197 15.3979C16.2197 15.5806 16.1782 15.7466 16.0952 15.896C16.0177 16.0454 15.9071 16.1616 15.7632 16.2446C15.6193 16.3332 15.4533 16.3774 15.2651 16.3774C15.1323 16.3774 15.005 16.3525 14.8833 16.3027C14.7671 16.2585 14.6592 16.1893 14.5596 16.0952L10.4756 12.0029C9.93327 12.3903 9.33561 12.6947 8.68262 12.916C8.02962 13.1374 7.34342 13.248 6.62402 13.248C5.71094 13.248 4.85319 13.0765 4.05078 12.7334C3.25391 12.3903 2.55111 11.9144 1.94238 11.3057C1.33366 10.6969 0.857747 9.99414 0.514648 9.19727C0.17155 8.39486 0 7.53711 0 6.62402ZM1.41943 6.62402C1.41943 7.34342 1.55225 8.01855 1.81787 8.64941C2.08903 9.27474 2.46256 9.82536 2.93848 10.3013C3.41992 10.7772 3.97331 11.1507 4.59863 11.4219C5.22949 11.693 5.90462 11.8286 6.62402 11.8286C7.34342 11.8286 8.01579 11.693 8.64111 11.4219C9.27197 11.1507 9.82536 10.7772 10.3013 10.3013C10.7772 9.82536 11.1507 9.27474 11.4219 8.64941C11.693 8.01855 11.8286 7.34342 11.8286 6.62402C11.8286 5.90462 11.693 5.23226 11.4219 4.60693C11.1507 3.97607 10.7772 3.42269 10.3013 2.94678C9.82536 2.46533 9.27197 2.0918 8.64111 1.82617C8.01579 1.55501 7.34342 1.41943 6.62402 1.41943C5.90462 1.41943 5.22949 1.55501 4.59863 1.82617C3.97331 2.0918 3.41992 2.46533 2.93848 2.94678C2.46256 3.42269 2.08903 3.97607 1.81787 4.60693C1.55225 5.23226 1.41943 5.90462 1.41943 6.62402Z"/></svg></span>
@@ -208,6 +275,74 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
       <h3 id="emptyTitle">沒有聊天</h3>
       <p id="emptyDesc">開始一段新的對話吧</p>
+    </div>
+    </section><!-- /screenChat -->
+
+    <!-- 主頁 -->
+    <section class="screen" id="screenHome" hidden>
+      <div class="topbar">
+        <div class="search" role="search">
+          <span class="mag" data-icon="mag" aria-hidden="true"></span>
+          <input type="search" placeholder="搜尋" aria-label="搜尋主頁" autocomplete="off">
+          <span class="mic" data-icon="mic" aria-hidden="true"></span>
+        </div>
+        <div class="chat-label">主頁</div>
+      </div>
+      <div class="home-body">
+        <div class="home-card"><b>👋 歡迎回來</b><span>這裡是你的主頁，動態與好友更新會顯示在這裡。</span></div>
+        <div class="home-card muted">更多主頁內容（下一階段）</div>
+      </div>
+    </section>
+
+    <!-- VIDEO -->
+    <section class="screen screen-video" id="screenVideo" hidden>
+      <div class="vid-stage">
+        <span class="vid-ava">N</span>
+        <div class="vid-name">NovaCHAT 視訊</div>
+        <div class="vid-sub">示範畫面 · 00:00</div>
+      </div>
+      <div class="vid-controls">
+        <button class="vbtn" data-v="mute" aria-label="靜音"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 18v3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+        <button class="vbtn end" data-v="end" aria-label="結束通話"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 9c-2.4 0-4.7.4-6.8 1.2-.5.2-.9.7-.9 1.3v2c0 .4.2.8.5 1 .7.5 1.5.9 2.3 1.2.4.1.9 0 1.1-.4l1-1.6c.2-.3.1-.7-.1-.9-.2-.2-.3-.5-.3-.8 1.1-.3 2.2-.4 3.2-.4s2.1.1 3.2.4c0 .3-.1.6-.3.8-.2.2-.3.6-.1.9l1 1.6c.2.4.7.5 1.1.4.8-.3 1.6-.7 2.3-1.2.3-.2.5-.6.5-1v-2c0-.6-.4-1.1-.9-1.3C16.7 9.4 14.4 9 12 9z"/></svg></button>
+        <button class="vbtn" data-v="cam" aria-label="鏡頭"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></button>
+      </div>
+    </section>
+
+    <!-- 我的 -->
+    <section class="screen" id="screenMe" hidden>
+      <div class="topbar"><div class="chat-label" style="font-size:28px;font-weight:700;margin-top:8px">我的</div></div>
+      <div class="me-body">
+        <div class="me-head">
+          <span class="me-ava">我</span>
+          <span class="me-info"><b>我</b><span>ID: nova_me</span></span>
+        </div>
+        <div class="me-list">
+          <button class="me-row" data-me="notify"><span>通知</span><span class="chev">›</span></button>
+          <button class="me-row" data-me="bg"><span>聊天背景</span><span class="chev">›</span></button>
+          <button class="me-row" data-me="about"><span>關於 NovaCHAT</span><span class="chev">›</span></button>
+        </div>
+        <button class="logout-btn" id="logoutBtn">退出登入</button>
+      </div>
+    </section>
+
+    <!-- 新增：好友 / 群組 -->
+    <div class="sheet" id="composeSheet" aria-hidden="true">
+      <div class="sheet-mask" data-close="composeSheet"></div>
+      <div class="sheet-panel">
+        <button class="sheet-item" data-new="friend"><b>＋ 新增好友</b><span>用名稱加一位新朋友</span></button>
+        <button class="sheet-item" data-new="group"><b>👥 建立群組</b><span>建立一個新的群組聊天</span></button>
+        <button class="sheet-cancel" data-close="composeSheet">取消</button>
+      </div>
+    </div>
+
+    <!-- 簡易輸入對話框 -->
+    <div class="prompt" id="prompt" aria-hidden="true">
+      <div class="sheet-mask" data-close="prompt"></div>
+      <div class="prompt-box">
+        <h4 id="promptTitle">標題</h4>
+        <input id="promptInput" type="text" autocomplete="off">
+        <div class="prompt-btns"><button data-close="prompt">取消</button><button id="promptOk" class="pri">確定</button></div>
+      </div>
     </div>
 
     <nav class="tabbar" aria-label="主導覽">
@@ -242,6 +377,16 @@
         <button type="submit" class="send" id="sendBtn" aria-label="傳送" disabled><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3.4 20.4l17.4-8.4a.6.6 0 0 0 0-1.1L3.4 2.6a.6.6 0 0 0-.9.7L4.7 10l9.3 2-9.3 2-2.2 6.7a.6.6 0 0 0 .9.7z"/></svg></button>
       </form>
     </section>
+
+    <!-- 貼圖 -->
+    <div class="sheet" id="stickerSheet" aria-hidden="true">
+      <div class="sheet-mask" data-close="stickerSheet"></div>
+      <div class="sheet-panel">
+        <div class="sheet-grip"></div>
+        <div class="sheet-title">貼圖</div>
+        <div class="sticker-grid" id="stickerGrid"></div>
+      </div>
+    </div>
 
     <!-- 聊天背景選擇器 -->
     <div class="bgsheet" id="bgsheet" aria-hidden="true">
@@ -285,6 +430,9 @@
     send(id, text){ const c=this.get(id); if(!c) return; const now=new Date();
       c.msgs.push({ from:'me', text, t:fmtWhen(now), status:'delivered' }); c.time=fmtTime(now); c.unread=0; },
     markRead(id){ const c=this.get(id); if(c) c.unread=0; },
+    addChat(opts){ const palette=['#ff7a59','#5b6cff','#37b6d6','#34c759','#a06bff','#ff2d87','#ff9f0a','#8e8e93'];
+      const c={ id:'u'+Date.now(), color:palette[Math.floor(Math.random()*palette.length)], online:false, muted:false, time:fmtTime(new Date()), unread:0, msgs:[], ...opts };
+      this._c.unshift(c); return c; },
   };
 
   const State = { filter:'all', query:'', openId:null };
@@ -405,6 +553,12 @@
     img.onerror=()=>cb(dataUrl); img.src=dataUrl;
   }
 
+  // 畫面切換（主頁 / 聊天 / VIDEO / 我的）
+  const SCREENS={ home:'screenHome', chat:'screenChat', video:'screenVideo', me:'screenMe' };
+  function showScreen(tab){ const id=SCREENS[tab];
+    if(!id){ if(tab==='seal') toast('關閉（示範）'); return; }   // ❌ 分頁：保持現有畫面
+    Object.values(SCREENS).forEach(s=>{ const el=document.getElementById(s); if(el) el.hidden=(s!==id); }); }
+
   function bind(){
     const inp=$('#searchInput');
     inp.addEventListener('input',()=>{ State.query=inp.value; renderList(); });
@@ -437,7 +591,45 @@
       $('#msgs').insertAdjacentHTML('beforeend',msgHTML(c.msgs[c.msgs.length-1],c));
       ta.value=''; refresh(); $('#msgs').scrollTop=$('#msgs').scrollHeight;
     });
-    $('.composer .plus').addEventListener('click',()=>toast('附件 / 圖片（下一階段）'));
+    // ===== 底部彈出選單 / 輸入框 通用 =====
+    const openSheet=(id)=>{ const s=$('#'+id); if(s){ s.classList.add('open'); s.setAttribute('aria-hidden','false'); } };
+    const closeSheet=(id)=>{ const s=$('#'+id); if(s){ s.classList.remove('open'); s.setAttribute('aria-hidden','true'); } };
+    document.querySelectorAll('[data-close]').forEach(el=>el.addEventListener('click',()=>closeSheet(el.dataset.close)));
+    let promptCb=null;
+    function openPrompt(title, placeholder, cb){ $('#promptTitle').textContent=title; const i=$('#promptInput'); i.value=''; i.placeholder=placeholder; promptCb=cb; openSheet('prompt'); setTimeout(()=>i.focus(),60); }
+    $('#promptOk').addEventListener('click',()=>{ const v=$('#promptInput').value.trim(); if(!v) return; closeSheet('prompt'); if(promptCb) promptCb(v); });
+    $('#promptInput').addEventListener('keydown',(e)=>{ if(e.key==='Enter') $('#promptOk').click(); });
+
+    // ===== 新增好友 / 建立群組 =====
+    $('#composeBtn').addEventListener('click',()=>openSheet('composeSheet'));
+    const addAndShow=(opts, msg)=>{ Store.addChat(opts); State.filter='all'; State.query=''; $('#searchInput').value='';
+      document.querySelectorAll('.chip').forEach(x=>x.classList.toggle('active',x.dataset.filter==='all')); renderList(); toast(msg); };
+    document.querySelectorAll('.sheet-item[data-new]').forEach(b=>b.addEventListener('click',()=>{
+      const kind=b.dataset.new; closeSheet('composeSheet');
+      setTimeout(()=>{ if(kind==='friend') openPrompt('新增好友','輸入好友名稱',(n)=>addAndShow({type:'dm', name:n, online:true}, '已新增好友：'+n));
+        else openPrompt('建立群組','輸入群組名稱',(n)=>addAndShow({type:'group', name:n, members:1}, '已建立群組：'+n)); }, 180); }));
+
+    // ===== 貼圖（對話的 ＋ 按鈕）=====
+    const STICKERS=['😀','😂','🥰','😎','😭','👍','🙏','🎉','❤️','🔥','✨','🥳','😴','🤔','😅','🙌','💯','🍜','☕','🌙'];
+    $('#stickerGrid').innerHTML=STICKERS.map(s=>`<button type="button">${s}</button>`).join('');
+    $('.composer .plus').addEventListener('click',()=>openSheet('stickerSheet'));
+    $('#stickerGrid').addEventListener('click',(e)=>{ const b=e.target.closest('button'); if(!b||!State.openId) return;
+      const c=Store.get(State.openId); Store.send(State.openId, b.textContent);
+      $('#msgs').insertAdjacentHTML('beforeend', msgHTML(c.msgs[c.msgs.length-1], c));
+      $('#msgs').scrollTop=$('#msgs').scrollHeight; closeSheet('stickerSheet'); });
+
+    // ===== 我的 =====
+    $('#logoutBtn').addEventListener('click',()=>toast('已退出登入（示範）'));
+    document.querySelectorAll('.me-row').forEach(b=>b.addEventListener('click',()=>toast(b.querySelector('span').textContent+'（下一階段）')));
+
+    // ===== VIDEO 控制 =====
+    document.querySelectorAll('.vbtn').forEach(b=>b.addEventListener('click',()=>{
+      if(b.dataset.v==='end') selectTab(document.querySelector('.tab[data-tab="chat"]'));
+      else toast(b.getAttribute('aria-label')+'（示範）'); }));
+
+    // 主頁搜尋框沿用聊天的放大鏡 / 麥克風圖示
+    const hm=$('#screenHome .mag'), hc=$('#screenChat .mag'); if(hm&&hc) hm.innerHTML=hc.innerHTML;
+    const hmi=$('#screenHome .mic'), hci=$('#screenChat .mic'); if(hmi&&hci) hmi.innerHTML=hci.innerHTML;
 
     // ===== 底部 tab bar：點擊/拖動；拖動時真・液態玻璃鏡片（移植 Group.html 的 createGlass 鏡片）=====
     const tabbar=$('#tabbar'), tabRow=$('#tabRow'), pill=$('#tabPill');
@@ -447,7 +639,7 @@
     function placePill(t, instant){ if(!t) return; pill.style.transition = instant ? 'none' : PILL; pill.style.width=t.offsetWidth+'px'; pill.style.transform='translateX('+t.offsetLeft+'px)'; if(instant) requestAnimationFrame(()=>{ pill.style.transition=PILL; }); }
     function selectTab(t, silent){ if(!t) return;
       tabs().forEach(x=>{ const on=x===t; x.classList.toggle('active',on); on?x.setAttribute('aria-current','page'):x.removeAttribute('aria-current'); });
-      placePill(t); if(!silent && t.dataset.tab!=='chat') toast(t.querySelector('.lbl').textContent+'（下一階段）'); }
+      placePill(t); showScreen(t.dataset.tab); }
     const tabAt=(clientX)=>{ const r=tabbar.getBoundingClientRect(); const x=clientX-r.left;
       let best=tabs()[0], bd=Infinity; tabs().forEach(t=>{ const c=t.offsetLeft+t.offsetWidth/2; const d=Math.abs(c-x); if(d<bd){bd=d;best=t;} }); return best; };
     const tabCenter=(t)=> tabbar.getBoundingClientRect().left + t.offsetLeft + t.offsetWidth/2;
