@@ -98,24 +98,22 @@
     /* Tab Bar — iOS 底部不過高：用 max() 不疊加 safe-area */
     /* 照 Group：固定高度、離底固定距離，不吃 safe-area → 不會變高 */
     .tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; display: flex; justify-content: center; padding: 0 16px 20px; }
-    /* 玻璃效果（參考 Group.html 的 iOS fallback：毛玻璃 blur + 白色 bezel 亮邊 + 外陰影）。
-       顏色不變：仍是同一個白（249,249,249），只降低不透明度讓背景透出（玻璃本質就是半透明）。 */
-    .tabbar-inner { width: 100%; height: 62px;
+    /* 玻璃底欄（iOS fallback 毛玻璃 + bezel 亮邊；顏色不變：同一白 249,249,249，只降不透明度） */
+    .tabbar-inner { width: 100%; height: 62px; position: relative; touch-action: none;
       background: rgba(249,249,249,0.55);
       backdrop-filter: blur(20px) saturate(190%); -webkit-backdrop-filter: blur(20px) saturate(190%);
       border: 0; border-radius: 999px;
-      box-shadow: inset 0 1px 0.5px rgba(255,255,255,0.75), inset 0 0 0 0.5px rgba(255,255,255,0.4), inset 0 -1.5px 2px rgba(255,255,255,0.25), 0 8px 15px rgba(0,0,0,0.12);
-      display: flex; align-items: center; padding: 0 4px; position: relative; touch-action: none; }
-    /* 動畫參考 Group.html：改用 transform 移動 + 彈性曲線（樣式/顏色/大小不變，只改動畫） */
-    .tab-lens { position: absolute; top: 5px; height: 52px; left: 0; width: 0; background: var(--nc-bar-active); border-radius: 999px; z-index: 0; pointer-events: none; transform: translateX(0); transition: transform .45s cubic-bezier(.34,1.56,.64,1), opacity .25s ease; will-change: transform; }
-    /* 滑動時彈出的玻璃鏡片（參考 Group.html）：比膠囊大、很透明、放手彈走；底下 tab 變藍 */
-    .tab-glens { position: absolute; top: 50%; left: 0; width: 80px; height: 70px; translate: 0 -50%; scale: .55; border-radius: 999px; z-index: 0; pointer-events: none; opacity: 0; visibility: hidden;
-      background: rgba(255,255,255,0.1); backdrop-filter: blur(6px) saturate(180%); -webkit-backdrop-filter: blur(6px) saturate(180%);
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.7), inset 0 2px 2px rgba(255,255,255,0.75), inset 0 -2px 2px rgba(255,255,255,0.35), 0 6px 16px rgba(0,0,0,0.14);
-      transition: opacity .22s ease, scale .32s cubic-bezier(.34,1.56,.64,1), visibility 0s linear .32s; will-change: translate, scale; }
-    .tabbar-inner.dragging .tab-glens { opacity: 1; scale: 1; visibility: visible; transition: opacity .16s ease, scale .42s cubic-bezier(.34,1.56,.64,1), visibility 0s; }
-    .tabbar-inner.dragging .tab-lens { opacity: 0; }
-    .tab.drag-hot { color: var(--nc-blue); }
+      box-shadow: inset 0 1px 0.5px rgba(255,255,255,0.75), inset 0 0 0 0.5px rgba(255,255,255,0.4), inset 0 -1.5px 2px rgba(255,255,255,0.25), 0 8px 15px rgba(0,0,0,0.12); }
+    /* 分頁層：鏡片滑過時用 clip-path 在這一層挖洞（底欄玻璃保持完整，不會透出背景） */
+    .tab-row { position: absolute; inset: 0; display: flex; align-items: center; padding: 0 4px; }
+    /* 靜止時的灰色膠囊（照 Group：transform 移動 + 彈性曲線） */
+    .tab-pill { position: absolute; top: 5px; left: 0; height: 52px; width: 0; background: var(--nc-bar-active); border-radius: 999px; z-index: 0; pointer-events: none; transform: translateX(0); transition: transform .45s cubic-bezier(.34,1.56,.64,1), opacity .28s ease; }
+    .tabbar-inner.is-dragging .tab-pill { opacity: 0; }
+    /* 滑動時的真・液態玻璃鏡片（移植 Group：createGlass content 模式折射 canvas 複本；iOS 也能折射） */
+    .tab-lens { position: fixed; left: 0; top: 0; width: var(--lens-w, 84px); height: 72px; border-radius: 36px; z-index: 7; pointer-events: none; opacity: 0; scale: .6; visibility: hidden; transition: opacity .28s ease, scale .32s cubic-bezier(.4,0,.2,1), visibility 0s linear .32s; will-change: translate, scale, opacity; }
+    .tab-lens__glass { position: absolute; inset: 0; border-radius: inherit; background: rgba(255,255,255,0.04); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.7), inset 0 2px 2px rgba(255,255,255,0.75), inset 0 -2px 2px rgba(255,255,255,0.35); }
+    .tab-lens.is-on { opacity: 1; scale: 1; visibility: visible; transition: opacity .16s ease, scale .45s cubic-bezier(.34,1.56,.64,1), visibility 0s; }
+    .tab-lens__canvas { position: absolute; left: 0; top: 0; width: 100%; height: 100%; display: block; }
     .tab { flex: 1; z-index: 1; height: 52px; border: 0; background: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border-radius: 999px; color: #000; font-family: var(--sf); position: relative; }
     .tab .ico { width: 26px; height: 26px; display: grid; place-items: center; }
     .tab .ico svg { width: 24px; height: 24px; fill: currentColor; }
@@ -204,15 +202,17 @@
 
     <nav class="tabbar" aria-label="主導覽">
       <div class="tabbar-inner" id="tabbar">
-        <span class="tab-lens" id="tabLens" aria-hidden="true"></span>
-        <span class="tab-glens" id="tabGlens" aria-hidden="true"></span>
+        <div class="tab-row" id="tabRow">
+        <span class="tab-pill" id="tabPill" aria-hidden="true"></span>
         <button class="tab" data-tab="home"><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 2.5l9.5 9.5L12 21.5 2.5 12 12 2.5z"/></svg></span><span class="lbl">主頁</span></button>
         <button class="tab active" data-tab="chat" aria-current="page"><span class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/></svg></span><span class="lbl">聊天</span></button>
         <button class="tab" data-tab="video"><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 3l9.5 16.5H2.5L12 3z"/></svg></span><span class="lbl">VIDEO</span></button>
         <button class="tab" data-tab="seal"><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 2c1 0 1.9.6 2.3 1.5.9-.5 2-.4 2.8.3.8.7 1 1.8.6 2.7.9.3 1.5 1.2 1.5 2.2s-.6 1.9-1.5 2.2c.4.9.2 2-.6 2.7-.8.7-1.9.8-2.8.3-.4.9-1.3 1.5-2.3 1.5s-1.9-.6-2.3-1.5c-.9.5-2 .4-2.8-.3-.8-.7-1-1.8-.6-2.7C3.6 13.9 3 13 3 12s.6-1.9 1.5-2.2c-.4-.9-.2-2 .6-2.7.8-.7 1.9-.8 2.8-.3C10.1 2.6 11 2 12 2z"/></svg></span><span class="lbl">❌</span></button>
         <button class="tab" data-tab="me"><span class="ico"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/></svg></span><span class="lbl">我的</span></button>
+        </div>
       </div>
     </nav>
+    <div class="tab-lens" id="tabLens" aria-hidden="true"><div class="tab-lens__glass" id="tabLensGlass"><canvas class="tab-lens__canvas" id="tabLensCanvas"></canvas></div></div>
 
     <section class="convo" id="convo" aria-label="對話" aria-hidden="true">
       <header class="convo-header">
@@ -425,40 +425,107 @@
     });
     $('.composer .plus').addEventListener('click',()=>toast('附件 / 圖片（下一階段）'));
 
-    // Tab Bar：點擊切換；拖動時彈出玻璃鏡片跟手指（參考 Group.html），灰膠囊隱藏、底下 tab 變藍、放手彈去最近 tab
-    const tabbar=$('#tabbar'), lens=$('#tabLens'), glens=$('#tabGlens');
+    // ===== 底部 tab bar：點擊/拖動；拖動時真・液態玻璃鏡片（移植 Group.html 的 createGlass 鏡片）=====
+    const tabbar=$('#tabbar'), tabRow=$('#tabRow'), pill=$('#tabPill');
     const tabs=()=>[...tabbar.querySelectorAll('.tab')];
-    const SPRING='transform .45s cubic-bezier(.34,1.56,.64,1), opacity .25s ease';   // Group 的彈性曲線
-    const moveLens=(t, instant)=>{ if(!t) return; lens.style.transition = instant ? 'none' : SPRING; lens.style.width=t.offsetWidth+'px'; lens.style.transform='translateX('+t.offsetLeft+'px)'; if(instant) requestAnimationFrame(()=>{ lens.style.transition=SPRING; }); };
-    function selectTab(t, silent, instant){ if(!t) return;
+    const TAB_PAD=4;
+    const PILL='transform .45s cubic-bezier(.34,1.56,.64,1), opacity .28s ease';
+    function placePill(t, instant){ if(!t) return; pill.style.transition = instant ? 'none' : PILL; pill.style.width=t.offsetWidth+'px'; pill.style.transform='translateX('+t.offsetLeft+'px)'; if(instant) requestAnimationFrame(()=>{ pill.style.transition=PILL; }); }
+    function selectTab(t, silent){ if(!t) return;
       tabs().forEach(x=>{ const on=x===t; x.classList.toggle('active',on); on?x.setAttribute('aria-current','page'):x.removeAttribute('aria-current'); });
-      moveLens(t, instant); if(!silent && t.dataset.tab!=='chat') toast(t.querySelector('.lbl').textContent+'（下一階段）'); }
-    const tabAtX=(clientX)=>{ const r=tabbar.getBoundingClientRect(); const x=clientX-r.left;
+      placePill(t); if(!silent && t.dataset.tab!=='chat') toast(t.querySelector('.lbl').textContent+'（下一階段）'); }
+    const tabAt=(clientX)=>{ const r=tabbar.getBoundingClientRect(); const x=clientX-r.left;
       let best=tabs()[0], bd=Infinity; tabs().forEach(t=>{ const c=t.offsetLeft+t.offsetWidth/2; const d=Math.abs(c-x); if(d<bd){bd=d;best=t;} }); return best; };
-    const setHot=(t)=>tabs().forEach(x=>x.classList.toggle('drag-hot', x===t));   // 鏡片底下的 tab 變藍
-    // 鏡片用彈簧跟手指：手指只改目標，每一幀往目標靠近 → 順滑不跳格
-    let dragging=false, moved=false, raf=0, springX=0, springV=0, springTarget=0;
-    function springStep(){ raf=0;
-      springV=(springV+(springTarget-springX)*0.22)*0.72;        // 剛性 0.22 / 阻尼 0.72
-      springX+=springV; glens.style.translate=springX+'px -50%';
-      setHot(tabAtX(tabbar.getBoundingClientRect().left + springX + glens.offsetWidth/2));
-      if(dragging || Math.abs(springTarget-springX)>0.3 || Math.abs(springV)>0.3) raf=requestAnimationFrame(springStep); }
-    tabbar.addEventListener('pointerdown',(e)=>{ const t=e.target.closest('.tab'); if(!t) return; dragging=true; moved=false;
-      const gw=t.offsetWidth+16; glens.style.width=gw+'px';     // 鏡片比 tab 寬 16px（照 Group）
-      const a=document.querySelector('.tab.active')||tabs()[0]; springX=a.offsetLeft+a.offsetWidth/2-gw/2; springV=0;
-      glens.style.translate=springX+'px -50%'; tabbar.classList.add('dragging'); setHot(a);
-      try{ tabbar.setPointerCapture(e.pointerId); }catch{} });
-    tabbar.addEventListener('pointermove',(e)=>{ if(!dragging) return; moved=true;
-      const r=tabbar.getBoundingClientRect(); const w=glens.offsetWidth;
-      let left=e.clientX-r.left-w/2; left=Math.max(2, Math.min(left, tabbar.clientWidth-w-2));
-      springTarget=left; if(!raf) raf=requestAnimationFrame(springStep); });
-    const endDrag=(e)=>{ if(!dragging) return; dragging=false; if(raf){ cancelAnimationFrame(raf); raf=0; }
-      tabbar.classList.remove('dragging'); setHot(null);
-      selectTab(moved ? tabAtX(e.clientX) : (e.target.closest('.tab')||document.querySelector('.tab.active')), false, true); };
+    const tabCenter=(t)=> tabbar.getBoundingClientRect().left + t.offsetLeft + t.offsetWidth/2;
+
+    // ---- 真・液態玻璃鏡片 ----
+    const BLUE=(getComputedStyle(document.documentElement).getPropertyValue('--nc-blue').trim())||'#007aff';
+    const tabLens=$('#tabLens'), tabLensGlass=$('#tabLensGlass'), tabLensCanvas=$('#tabLensCanvas');
+    const lensCtx=tabLensCanvas.getContext('2d');
+    const LENS_H=72, LENS_ZOOM=1.08; let LENS_W=84;
+    let lensGlass=null, lensSprite=null, lensBar=null;
+    const lensMotion={ x:0, v:0, target:0, frame:0, last:0 };
+    // createGlass：content 模式折射鏡片內的 canvas 複本（iOS 也能折射）；file:// 載不到時降級為 CSS bezel
+    async function ensureLensGlass(){ if(lensGlass) return;
+      try{ const m=await import('./assets/lib/liquid-glass.js'); if(lensGlass) return;
+        lensGlass=m.createGlass(tabLensGlass,{ fit:true, clip:true, radius:LENS_H/2, refraction:12, bezel:0.5, curvature:4, chroma:0, specular:0.9, specularWidth:2.5 });
+      }catch(err){ /* 降級：仍有 CSS 玻璃 bezel + canvas 藍圖 */ } }
+    // tab 的 inline SVG 圖示光柵化成 Image（cache）
+    const iconImgs=new Map();
+    function iconImg(tab){ if(iconImgs.has(tab)) return iconImgs.get(tab);
+      let img=null; const svg=tab.querySelector('.ico svg');
+      if(svg){ const c=svg.cloneNode(true); c.setAttribute('xmlns','http://www.w3.org/2000/svg'); c.setAttribute('width','24'); c.setAttribute('height','24'); c.setAttribute('fill','#000');
+        img=new Image(); img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(new XMLSerializer().serializeToString(c)); }
+      iconImgs.set(tab,img); return img; }
+    tabs().forEach(iconImg);
+    // 整條分頁列畫成藍色一張圖（開始滑時畫一次），每幀只貼鏡片底下那塊
+    function buildLensSprite(){
+      const bar=tabbar.getBoundingClientRect(); const dpr=Math.min(3, window.devicePixelRatio||1);
+      const sprite=document.createElement('canvas'); sprite.width=Math.round(bar.width*dpr); sprite.height=Math.round(bar.height*dpr);
+      const g=sprite.getContext('2d'); g.scale(dpr,dpr);
+      const box=(n)=>{ const r=n.getBoundingClientRect(); return { x:r.left-bar.left, y:r.top-bar.top, w:r.width, h:r.height }; };
+      const paint=document.createElement('canvas'); const pg=paint.getContext('2d');
+      tabs().forEach(tab=>{
+        const ico=tab.querySelector('.ico'); const img=iconImg(tab);
+        if(ico && img && img.complete && img.naturalWidth){ const b=box(ico);
+          paint.width=Math.max(1,Math.round(b.w*dpr)); paint.height=Math.max(1,Math.round(b.h*dpr));
+          pg.globalCompositeOperation='source-over'; pg.clearRect(0,0,paint.width,paint.height); pg.drawImage(img,0,0,paint.width,paint.height);
+          pg.globalCompositeOperation='source-in'; pg.fillStyle=BLUE; pg.fillRect(0,0,paint.width,paint.height);
+          g.drawImage(paint, b.x, b.y, b.w, b.h); }
+        const label=tab.querySelector('.lbl');
+        if(label){ const b=box(label); const cs=getComputedStyle(label);
+          g.font=`${cs.fontWeight} ${cs.fontSize} system-ui, ${cs.fontFamily}`; g.fillStyle=BLUE; g.textAlign='center'; g.textBaseline='middle';
+          g.fillText(label.textContent, b.x+b.w/2, b.y+b.h/2); } });
+      lensSprite={ canvas:sprite, dpr }; }
+    function drawLensCanvas(lx, ly){ if(!lensSprite) return; const { canvas, dpr }=lensSprite;
+      const w=Math.round(LENS_W*dpr), h=Math.round(LENS_H*dpr);
+      if(tabLensCanvas.width!==w||tabLensCanvas.height!==h){ tabLensCanvas.width=w; tabLensCanvas.height=h; }
+      lensCtx.setTransform(1,0,0,1,0,0); lensCtx.clearRect(0,0,w,h);
+      lensCtx.translate(w/2,h/2); lensCtx.scale(LENS_ZOOM,LENS_ZOOM); lensCtx.translate(-w/2,-h/2);
+      lensCtx.drawImage(canvas, (lensBar.left-lx)*dpr, (lensBar.top-ly)*dpr); }
+    const holePos={ x:0, y:0 };
+    function applyLens(){ const lx=lensMotion.x-LENS_W/2; const ly=lensBar.top+lensBar.height/2-LENS_H/2;
+      tabLens.style.translate=`${lx}px ${ly}px`; drawLensCanvas(lx,ly); holePos.x=lx-lensBar.left; holePos.y=ly-lensBar.top; }
+    let holeFrame=0;
+    function drawHole(){ holeFrame=0;
+      if(!tabbar.classList.contains('is-dragging')){ tabRow.style.clipPath=''; tabRow.style.webkitClipPath=''; return; }
+      const cs=getComputedStyle(tabLens); const k=(parseFloat(cs.opacity)||0)>0.03 ? (parseFloat(cs.scale)||1) : 0;
+      if(k<0.03){ tabRow.style.clipPath=''; tabRow.style.webkitClipPath=''; }
+      else { const W=tabRow.clientWidth, H=tabRow.clientHeight; const w=LENS_W*k, h=LENS_H*k, r=h/2;
+        const x=holePos.x+(LENS_W-w)/2, y=holePos.y+(LENS_H-h)/2; const f=(n)=>n.toFixed(1);
+        const path=`path(evenodd, 'M0 0H${f(W)}V${f(H)}H0Z M${f(x+r)} ${f(y)}H${f(x+w-r)}A${f(r)} ${f(r)} 0 0 1 ${f(x+w-r)} ${f(y+h)}H${f(x+r)}A${f(r)} ${f(r)} 0 0 1 ${f(x+r)} ${f(y)}Z')`;
+        tabRow.style.clipPath=path; tabRow.style.webkitClipPath=path; }
+      holeFrame=requestAnimationFrame(drawHole); }
+    function startHole(){ if(!holeFrame) holeFrame=requestAnimationFrame(drawHole); }
+    function lensLimits(){ const slot=(lensBar.width-TAB_PAD*2)/tabs().length; return [lensBar.left+TAB_PAD+slot/2, lensBar.right-TAB_PAD-slot/2]; }
+    function stepLens(now){ let dt=Math.min(0.05,(now-lensMotion.last)/1000||1/60); lensMotion.last=now;
+      while(dt>1e-6){ const h=Math.min(1/120,dt); const a=-700*(lensMotion.x-lensMotion.target)-48*lensMotion.v; lensMotion.v+=a*h; lensMotion.x+=lensMotion.v*h; dt-=h; }
+      if(Math.abs(lensMotion.v)<4 && Math.abs(lensMotion.x-lensMotion.target)<0.3){ lensMotion.x=lensMotion.target; lensMotion.v=0; lensMotion.frame=0; applyLens(); return; }
+      applyLens(); lensMotion.frame=requestAnimationFrame(stepLens); }
+    function lensToX(clientX, immediate){ const [mn,mx]=lensLimits(); lensMotion.target=Math.max(mn,Math.min(mx,clientX));
+      if(immediate){ cancelAnimationFrame(lensMotion.frame); lensMotion.frame=0; lensMotion.x=lensMotion.target; lensMotion.v=0; applyLens(); return; }
+      if(!lensMotion.frame){ lensMotion.last=performance.now(); lensMotion.frame=requestAnimationFrame(stepLens); } }
+    function sizeLens(){ const bw=tabbar.getBoundingClientRect().width||window.innerWidth; LENS_W=Math.round((bw-TAB_PAD*2)/tabs().length+16); document.documentElement.style.setProperty('--lens-w', LENS_W+'px'); }
+    sizeLens(); window.addEventListener('resize', sizeLens); ensureLensGlass();
+
+    let dragStartX=null, draggingNow=false, lensTimer=0, lensDoneTimer=0;
+    function showLens(clientX){ clearTimeout(lensTimer); clearTimeout(lensDoneTimer); ensureLensGlass();
+      lensBar=tabbar.getBoundingClientRect(); sizeLens(); buildLensSprite();
+      lensToX(tabCenter(tabAt(clientX)), true);
+      tabbar.classList.add('is-dragging'); tabLens.classList.add('is-on'); startHole();
+      requestAnimationFrame(()=>lensGlass&&lensGlass.flush&&lensGlass.flush());
+      [90,250].forEach(ms=>setTimeout(()=>lensGlass&&lensGlass.flush&&lensGlass.flush(), ms)); }
+    function hideLens(delay){ clearTimeout(lensTimer); clearTimeout(lensDoneTimer);
+      lensTimer=setTimeout(()=>{ tabLens.classList.remove('is-on');
+        lensDoneTimer=setTimeout(()=>{ if(tabLens.classList.contains('is-on')) return; tabbar.classList.remove('is-dragging'); }, 340); }, delay); }
+    tabbar.addEventListener('pointerdown',(e)=>{ if(!e.target.closest('.tab')) return; dragStartX=e.clientX; draggingNow=false; try{ tabbar.setPointerCapture(e.pointerId); }catch{} showLens(e.clientX); });
+    tabbar.addEventListener('pointermove',(e)=>{ if(dragStartX===null) return; if(!draggingNow && Math.abs(e.clientX-dragStartX)<6) return; draggingNow=true; lensToX(e.clientX); });
+    function endDrag(e){ if(dragStartX===null) return; const t=tabAt(e.clientX); dragStartX=null; draggingNow=false; lensToX(tabCenter(t)); selectTab(t,false); hideLens(260); }
     tabbar.addEventListener('pointerup',endDrag);
-    tabbar.addEventListener('pointercancel',()=>{ if(!dragging) return; dragging=false; if(raf){ cancelAnimationFrame(raf); raf=0; } tabbar.classList.remove('dragging'); setHot(null); selectTab(document.querySelector('.tab.active'), true, true); });
-    tabbar.addEventListener('click',(e)=>{ if(moved){ e.preventDefault(); e.stopPropagation(); moved=false; return; } const t=e.target.closest('.tab'); if(t) selectTab(t,false); });
-    const relocate=()=>moveLens(document.querySelector('.tab.active'), true);
+    tabbar.addEventListener('pointercancel',()=>{ dragStartX=null; draggingNow=false; hideLens(0); selectTab(document.querySelector('.tab.active')||tabs()[0], true); });
+    tabbar.addEventListener('lostpointercapture',()=>{ if(dragStartX===null) return; dragStartX=null; draggingNow=false; hideLens(0); });
+    tabbar.addEventListener('click',(e)=>{ e.preventDefault(); if(e.detail===0){ const t=e.target.closest('.tab'); if(t) selectTab(t,false); } });
+    const relocate=()=>placePill(document.querySelector('.tab.active')||tabs()[0], true);
     requestAnimationFrame(relocate); window.addEventListener('resize',relocate);
     if(document.fonts&&document.fonts.ready) document.fonts.ready.then(relocate);
   }
